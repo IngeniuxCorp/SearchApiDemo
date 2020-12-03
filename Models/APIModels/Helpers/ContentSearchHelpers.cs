@@ -2,6 +2,7 @@
 using Ingeniux.Runtime.Models.SearchSource;
 using Ingeniux.Search;
 using Ingeniux.Search.StatsProviders;
+using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Spatial;
 using Lucene.Net.Spatial.Prefix;
@@ -126,6 +127,12 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 			Ingeniux.Search.Search search = new Ingeniux.Search.Search(request);
 			var siteSearch = CMSPageDefaultController.GetSiteSearch();
 			SearchInstruction instructions = new SearchInstruction(siteSearch.DefaultQueryAnalyzer);
+			var apiSourceName = ConfigurationManager.AppSettings["APISourceName"] ?? string.Empty;
+			if (string.IsNullOrWhiteSpace(apiSourceName))
+			{
+				instructions.AddQuery(new TermQuery(new Term("_SOURCENAME_", apiSourceName)), Occur.MUST);
+			}
+			
 
 			var refinementsKeys = request.QueryString.AllKeys.Where(k => _REFINEMENT_PATTERN.IsMatch(k));
 
@@ -392,6 +399,11 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 			Ingeniux.Search.Search search = new Ingeniux.Search.Search(request);
 			var siteSearch = CMSPageDefaultController.GetSiteSearch(); 
 			SearchInstruction instructions = new SearchInstruction(siteSearch.DefaultQueryAnalyzer);
+			var apiSourceName = ConfigurationManager.AppSettings["APISourceName"] ?? string.Empty;
+			if (string.IsNullOrWhiteSpace(apiSourceName))
+			{
+				instructions.AddQuery(new TermQuery(new Term("_SOURCENAME_", apiSourceName)), Occur.MUST);
+			}
 
 			var pageIdQuery = new BooleanQuery();
 			foreach(var pageId in pageIds)
