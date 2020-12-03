@@ -1,0 +1,23 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@using Ingeniux.Search;
+@{
+	Layout = null;
+	// this view is for demonstration of search result item enumeration only
+	//DO NOT USE IT DIRECTLY IN ACTUAL IMPLEMENTATION
+}
+
+<div>
+	<h3>Search Results</h3>
+	@{
+		SearchResultsCollection searchResults = Model.Tag as SearchResultsCollection;
+	}
+
+	@foreach (SearchResultItem entry in searchResults)
+	{
+		<div>
+			<a href="@entry.URL">@entry.Name</a>
+			<p>@entry.MatchingFrags</p>
+		</div>
+	}
+</div>

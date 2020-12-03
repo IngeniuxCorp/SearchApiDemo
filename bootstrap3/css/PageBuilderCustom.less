@@ -1,0 +1,214 @@
+﻿@PageBuilderGridColumns: 12;
+@PageBuilderGridGutterWidth:    2.127659574%;
+
+//the grid column width is 100% minus the cutter times colums minus one, divided by columns. 
+//Cutter width is fixed to same percentage
+@PageBuilderGridColumnWidth:    (100%-(@PageBuilderGridGutterWidth * (@PageBuilderGridColumns - 1))) / @PageBuilderGridColumns;
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Uncomment the following section to activate page builder styles for Foundation Framework
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+@FoundationMediumGridName: large;
+@FoundationSmallGridName: medium;
+@FoundationNoWrapGridName: small;
+
+.colWidth_foundation (@columns) {
+    width: (@PageBuilderGridColumnWidth * @columns) + (@PageBuilderGridGutterWidth * (@columns - 1));
+}
+
+.generate_columns_foundation (@index, @gridSize) when (@index > 0) {
+    html .pageBuilderLayout .row .@{gridSize}-@{index} { 
+		.colWidth_foundation(@index); 
+    }
+    .generate_columns_foundation(@index - 1, @gridSize);
+}
+
+@media (min-width: 992px) {
+
+	.generate_columns_foundation (@PageBuilderGridColumns, @FoundationMediumGridName);
+
+	html .pageBuilderLayout .row [class*="large-"] {
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		box-sizing: border-box;
+	}
+}
+
+@media (min-width: 768px) {
+
+	.generate_columns_foundation (@PageBuilderGridColumns, @FoundationSmallGridName);
+
+	html .pageBuilderLayout .row [class*="medium-"] {
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		box-sizing: border-box;
+	}
+}
+
+.generate_columns_foundation (@PageBuilderGridColumns, @FoundationNoWrapGridName);
+
+html .pageBuilderLayout .row [class*="small-"] {
+	margin-left: 2.127659574468085%;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
+html .pageBuilderLayout .row [class*="large-"]:first-child,
+html .pageBuilderLayout .row [class*="medium-"]:first-child,
+html .pageBuilderLayout .row [class*="small-"]:first-child {
+	margin-left: 0;
+}
+
+html .pageBuilderLayout .row-fluid {
+	width: auto;
+	margin: 3px;
+}*/
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Uncomment the following section to activate page builder styles for Materialize CSS Framework
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/*@MaterializeMediumGridName: l;
+@MaterializeSmallGridName: m;
+@MaterializeNoWrapGridName: s;
+
+    .colWidth_Materialize (@columns) {
+      width: (@PageBuilderGridColumnWidth * @columns) + (@PageBuilderGridGutterWidth * (@columns - 1));
+    }
+
+    .generate_columns_Materialize (@index, @gridSize) when (@index > 0) {
+      html .pageBuilderLayout .row .col.@{gridSize}@{index} { 
+		  .colWidth_Materialize(@index); 
+      }
+      .generate_columns_Materialize(@index - 1, @gridSize);
+    }
+
+
+.generate_columns_Materialize (@PageBuilderGridColumns, @MaterializeNoWrapGridName);
+
+@media (min-width: 768px) {
+	.generate_columns_Materialize (@PageBuilderGridColumns, @MaterializeSmallGridName);
+
+	html .pageBuilderLayout .row [class*="col m"] {
+		margin-left: 2.127659574468085%;
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		box-sizing: border-box;
+	}
+}
+
+
+@media (min-width: 992px) {
+	.generate_columns_Materialize (@PageBuilderGridColumns, @MaterializeMediumGridName);
+
+	html .pageBuilderLayout .row [class*="col l"] {
+		margin-left: 2.127659574468085%;
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		box-sizing: border-box;
+	}
+}
+
+
+
+html .pageBuilderLayout .row [class*="col s"] {
+	margin-left: 2.127659574468085%;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
+@media (max-width: 992px) {
+	html .pageBuilderLayout .row [class*="col l"] {
+		margin-left: 0;
+		width: 100%;
+	}
+}
+
+@media (max-width: 768px) {
+	html .pageBuilderLayout .row [class*="col m"] {
+		margin-left: 0;
+		width: 100%;
+	}
+}
+
+
+	html .pageBuilderLayout .row [class*="col s"]:first-child,
+	html .pageBuilderLayout .row [class*="col m"]:first-child,
+	html .pageBuilderLayout .row [class*="col l"]:first-child {
+		margin-left: 0;
+	}*/
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Uncomment the following section to activate page builder styles for Ingeniux legacy responsive framework
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*.colWidth_legacy (@columns) {
+    width: (@PageBuilderGridColumnWidth * @columns) + (@PageBuilderGridGutterWidth * (@columns - 1));
+}
+
+.generate_columns_legacy_single_digit (@index) when (@index > 0) {
+    html .pageBuilderLayout div.colwrap div.col.w-0@{index} { 
+		.colWidth_legacy(@index); 
+    }
+    .generate_columns_legacy_single_digit(@index - 1);
+}
+
+.generate_columns_legacy (@index) when (@index > 9) {
+    html .pageBuilderLayout div.colwrap div.col.w-@{index} { 
+		.colWidth_legacy(@index); 
+    }
+    .generate_columns_legacy(@index - 1);
+}
+
+
+.colWidth_full() {
+	  position: relative;
+}
+
+.generate_columns_legacy_fullWidth_single_digit (@index) when (@index > 0) {
+    html .pageBuilderLayout div.colwrap div.col.w-0@{index} { 
+		.colWidth_full(); 
+    }
+    .generate_columns_legacy_fullWidth_single_digit(@index - 1);
+}
+
+.generate_columns_legacy_fullWidth (@index) when (@index > 9) {
+    html .pageBuilderLayout div.colwrap div.col.w-@{index} { 
+		.colWidth_full(); 
+    }
+    .generate_columns_legacy_fullWidth(@index - 1);
+}
+
+
+.generate_columns_legacy_fullWidth (12);
+.generate_columns_legacy_fullWidth_single_digit (9);
+
+html .pageBuilderLayout div.colwrap [class*="w-"] {
+	width: 100%;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+	.generate_columns_legacy (12);
+	.generate_columns_legacy_single_digit (9);
+
+	html .pageBuilderLayout div.colwrap [class*="w-"] {
+		margin-left: 2.127659574468085%;
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		box-sizing: border-box;
+	}
+
+	html .pageBuilderLayout div.colwrap [class*="w-"]:first-child {
+		margin-left: 0;
+	}
+}*/

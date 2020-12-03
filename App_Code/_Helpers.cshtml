@@ -1,0 +1,362 @@
+﻿@using Ingeniux.Runtime
+@using System.Web.Mvc
+
+@helper AddOnClickAttribute(String url, String width = "", String height = "")
+{
+width = !String.IsNullOrWhiteSpace(width) ? width : "700";
+height = !String.IsNullOrWhiteSpace(height) ? height : "500";
+string onclickStr = "window.open('" + url + "','1386630580673','width=" + width + ",height=" + height + ",toolbar=0,menubar=0,location=0,status=1,scrollbars=1,resizable=1,left=0,top=0');return false;";
+
+	@MvcHtmlString.Create("onclick=\"" + onclickStr + "\"");
+}
+
+@helper FormatDate(String dateStr, String dateFormat)
+{
+	DateTime? date = _Functions.GetDate(dateStr);
+	if (date.HasValue)
+	{
+		@date.Value.ToString(dateFormat);
+	}
+}
+@helper FormatEventDates(String startDateStr, String endDateStr, String format = "MMMM d, yyyy")
+{
+String output = "";
+DateTime? startdate = _Functions.GetDate(startDateStr);
+DateTime? endDate = _Functions.GetDate(endDateStr);
+if (startdate.HasValue)
+{
+	if (endDate.HasValue && format == "MMMM d, yyyy" && endDate.Value.Date != startdate.Value.Date)
+	{
+		//special handling here - we'll try to condense as much as we can.
+		DateTime startVal = startdate.Value;
+		DateTime endVal = endDate.Value;
+		if (startVal.Year == endVal.Year && startVal.Month == endVal.Month)
+		{
+			//output April 4 - 9, 2014
+			output = startVal.ToString("MMMM d") + endVal.ToString(" - d, yyyy");
+		}
+		else if (startVal.Year == endVal.Year)
+		{
+			//output April 4 - May 17, 2014
+			output = startVal.ToString("MMMM d") + endVal.ToString(" - MMMM d, yyyy");
+		}
+		else
+		{
+			output = startVal.ToString(format) + " - " + endVal.ToString(format);
+		}
+	}
+	else
+	{
+		output += startdate.Value.ToString(format);
+		if (endDate.HasValue && endDate.Value.Date != startdate.Value.Date)
+		{
+			output += " - " + endDate.Value.ToString(format);
+		}
+	}
+}
+	@output
+}
+@helper FormatEventDates(ICMSLinkElement eventItem, String format = "MMMM d, yyyy")
+{
+	if (eventItem != null)
+	{
+		@FormatEventDates(eventItem.GetAttributeValue("EventStartDate"), eventItem.GetAttributeValue("EventEndDate"), format)
+	}
+}
+@helper FormatEventTimes(String startTimeStr, String endTimeStr, Boolean usePrefix = false)
+{
+String returnVal = "";
+String prefix = "";
+if (startTimeStr != "undefined" && !String.IsNullOrWhiteSpace(startTimeStr))
+{
+	if (endTimeStr != "undefined" && !String.IsNullOrWhiteSpace(endTimeStr))
+	{
+		String start = _Functions.GetTime(startTimeStr);
+		String end = _Functions.GetTime(endTimeStr);
+		//return 8 - 10 AM instead of 8 AM - 10 AM
+		if (start.SubstringAfter(" ") == end.SubstringAfter(" "))
+		{
+			returnVal = start.SubstringBefore(" ") + " - " + end;
+		}
+		else
+		{
+			returnVal = start + " - " + end;
+		}
+		prefix = (usePrefix) ? "from " : "";
+	}
+	else
+	{
+		returnVal += _Functions.GetTime(startTimeStr);// "at " +
+		prefix = (usePrefix) ? "at " : "";
+	}
+}
+	@(prefix + returnVal)
+}
+@helper Pagination(int numItems, int itemsPerPage, int currentPage, String url, String querystrings, Boolean showPreviousNext = false, String ulClass = "")
+{
+querystrings = MvcHtmlString.Create(querystrings).ToString();
+querystrings = (querystrings.Length > 0 && querystrings.LastIndexOf('&') != querystrings.Length - 1) ? querystrings + "&" : querystrings;
+
+String queryUrl = url + (url.Contains("?") ? "&" : "?") + querystrings + "page=";
+queryUrl = queryUrl.Replace("&&", "&");
+if (numItems > itemsPerPage)
+{
+	int totalPages = (int)Math.Ceiling(1.0 * numItems / itemsPerPage);
+
+		<div @_Functions.GetClassAttrString(ulClass)>
+
+			@if (showPreviousNext && currentPage != 1)
+			{
+				<a href="@MvcHtmlString.Create(queryUrl + (currentPage - 1))">&lsaquo; Prev</a>
+			}
+			else if (showPreviousNext && currentPage == 1)
+
+			{
+				<a class="off" href="#">&lsaquo; Prev</a>
+
+			}
+			@for (int i = 1; i <= totalPages; i++)
+
+			{
+				<a @_Functions.GetClassAttrString("on", i == currentPage) href="@MvcHtmlString.Create(queryUrl + i)">@i</a>
+			}
+			@if (showPreviousNext && currentPage != totalPages)
+			{
+				<a href="@MvcHtmlString.Create(queryUrl + (currentPage + 1))">Next &rsaquo;</a>
+			}
+			else if (showPreviousNext && currentPage == totalPages)
+			{
+				<a class="off" href="#">Next &rsaquo;</a>
+			}
+		</div>
+	}
+}
+
+@helper Pagination_Search(int itemsPerPage, int startIndex, bool isNext, String url, String querystrings)
+{
+int currentPage = (int)Math.Ceiling(startIndex / 10.0);
+if (currentPage > 1 || isNext)
+{
+	startIndex--;  //switch back to 0-based index
+
+	url += url.Contains("?") ? "&" : "?";
+		<aside class="paginationBox">
+			<ul>
+				@{
+		if (1 < currentPage)
+		{
+						<li class="pre"><a href="@(url + querystrings + "start=" + (startIndex - 10))">&#171;</a></li>
+		}
+		for (int i = currentPage - 3; i < currentPage; i++)
+		{
+			if (i > 0)
+			{
+				String fullUrl = url + querystrings + "start=" + ((i - 1) * 10);
+							<li><a href="@fullUrl">@i</a></li>
+			}
+		}
+					<li class="current"><a href="#">@currentPage</a></li>
+		if (isNext)
+		{
+			for (int i = currentPage + 1; i < currentPage + 4; i++)
+			{
+				String fullUrl = url + querystrings + "start=" + ((i - 1) * 10);
+							<li><a href="@fullUrl">@i</a></li>
+			}
+						<li class="next"><a href="@(url + querystrings + "start=" + (startIndex + 10))">&#187;</a></li>
+					}
+				}
+			</ul>
+		</aside>
+	}
+}
+
+@helper PrintArray(String[] items, String delim)
+{
+	if (items != null && items.Any())
+	{
+		items = items.Where(item => !String.IsNullOrWhiteSpace(item)).ToArray();
+		int count = items.Count();
+		for (int i = 0; i < count; i++)
+		{
+			@items[i]
+			if (i != count - 1)
+			{
+				@delim
+			}
+		}
+	}
+}
+
+@helper RenderCMSLink(ICMSLinkElement link, UrlHelper urlHelper, String linkTextOverride = "", bool useNavName = false, String cssClasses = "")
+{
+	if (link != null)
+	{
+		if (link.Schema == null || (link.Schema != "Folder" && (link.Schema.IndexOf("Component") == -1) || !String.IsNullOrWhiteSpace(link.GetAttributeValue("CustomURL"))))
+		{
+			String linkURL = _Functions.GetLinkAction(link, urlHelper);
+			String linkText = (!String.IsNullOrWhiteSpace(link.LinkName)) ? link.LinkName : link.Name;
+			linkText = (useNavName && link.GetAttributeValue("NavigationName") != "") ? link.GetAttributeValue("NavigationName") : linkText;
+			linkText = (!String.IsNullOrWhiteSpace(linkTextOverride)) ? linkTextOverride : linkText;
+			String target = (!String.IsNullOrWhiteSpace(link.GetAttributeValue("Target"))) ? link.GetAttributeValue("Target") : link.GetAttributeValue("CustomTarget");
+
+			string classStr = !string.IsNullOrEmpty(cssClasses) ? string.Format("class=\"{0}\"", cssClasses) : "";
+			@RenderLink(linkURL, linkText, target, cssClasses, "", link.LinkName != "" ? link.LinkName : link.Name);
+		}
+	}
+}
+@helper RenderCMSLinkList(IEnumerable<ICMSLinkElement> links, UrlHelper urlHelper, Boolean useLast = false, String ulClass = "", String ulAttr = "", Boolean useNavName = false)
+{
+	if (links.Any())
+	{
+		<ul @MvcHtmlString.Create(ulAttr) @_Functions.GetClassAttrString(ulClass)>
+			@{
+		int linkCount = links.Count();
+		int i = 0;
+		foreach (var link in links)
+		{
+			i++;
+			string liClass = (useLast && i == linkCount) ? "class=\"last\"" : "";
+					@RenderCMSLiWithLink(link, urlHelper, liClass, useNavName);
+		}
+			}
+		</ul>
+	}
+}
+@helper RenderCMSLiWithLink(ICMSLinkElement link, UrlHelper url, String liAttr = "", Boolean useNavName = false)
+{
+	if (link != null)
+	{
+		<li @MvcHtmlString.Create(liAttr)>@RenderCMSLink(link, url, "", useNavName)</li>
+	}
+}
+@helper RenderDropdownFilter(IEnumerable<ICMSNavigatingCategory> cats, String filterName, String filterValue, String defaultValue, String thisPageUrl)
+{
+	<select onchange="window.location.href = '@thisPageUrl' + '@filterName=' + this.value;">
+		<option value="">@defaultValue</option>
+		@{
+			foreach (ICMSNavigatingCategory cat in cats)
+			{
+				<option value="@cat.ID" @MvcHtmlString.Create(cat.ID == filterValue ? "selected=\"selected\"" : "")>@cat.Name</option>
+			}
+		}
+	</select>
+}
+@helper RenderICEAttribute(ICMSElement ele, bool isComponent = false)
+{
+if (ele != null && ele.EditMode)
+{
+	string fieldName = ele.Content.Name.LocalName;
+	if ((fieldName == "Page" || isComponent) && ele.Attribute("Name") != null)
+	{
+		fieldName = ele.Content.GetAttributeValue("Name", "");
+	}
+
+	__razor_helper_writer.Write("EditFieldName=\"" + fieldName + "\" ");
+
+	__razor_helper_writer.Write("EditFieldId=\"" + ele.Content.GetAttributeValue("UID", string.Empty) + "\" ");
+
+
+	//get ancestors ids, needed to edit embedded component fields in list
+	var ancestorIds = ele.Content.AncestorsAndSelf()
+		.Select(
+			aEle => aEle.GetAttributeValue("UID", string.Empty))
+		.Where(
+			uid => !string.IsNullOrWhiteSpace(uid))
+		.Reverse()
+		.JoinString("|");
+
+	__razor_helper_writer.Write("EditFieldFullId=\"" + ancestorIds + "\" ");
+
+	if (ele.GetAttributeValue("Embedded") == "true")
+	{
+		__razor_helper_writer.Write("EditField_Embedded=\"true\" ");
+	}
+
+	if (ele.GetAttributeValue("WrappedUp") == "true")
+	{
+		__razor_helper_writer.Write("EditField_WrappedUp=\"true\" ");
+	}
+
+	//append EditFieldMode attribute if provided. The provider can be either the calling template, or passed in via ICE update request
+	if (!string.IsNullOrEmpty(ele.ViewMode))
+	{
+		__razor_helper_writer.Write("EditFieldTemplateMode=\"" + ele.ViewMode + "\" ");
+	}
+}
+}
+
+@helper RenderImage(ICMSElement imageElt, UrlHelper urlHelper, string cssClasses = "", int width = 0, int height = 0, bool useImageSize = false)
+{
+	if (imageElt != null && !String.IsNullOrWhiteSpace(imageElt.Value))
+	{
+		if (useImageSize)
+		{
+			width = width == 0 ? _Functions.IntegerOrDefault(imageElt.GetAttributeValue("Width"), 0) : width;
+			height = height == 0 ? _Functions.IntegerOrDefault(imageElt.GetAttributeValue("Height"), 0) : height;
+		}
+		String styleStr = "";
+		styleStr += (width != 0) ? "max-width:" + width + "px;" : "";
+		styleStr += (height != 0) ? "max-height:" + height + "px;" : "";
+		MvcHtmlString classStr = _Functions.GetClassAttrString(cssClasses);
+		<img @RenderICEAttribute(imageElt) src="@urlHelper.Asset(imageElt.Value, imageElt)" alt="@imageElt.GetAttributeValue("AlternateText")" @classStr @MvcHtmlString.Create(styleStr != "" ? "style=\"" + styleStr + "\"" : "") />
+	}
+}
+@helper RenderImage(String imagePath, UrlHelper urlHelper, String altText, ICMSEnvironment randomElt, String cssClasses = "", int width = 0)
+{
+	if (randomElt != null && !String.IsNullOrWhiteSpace(imagePath))
+	{
+		string widthStr = (width != 0) ? "style=\"max-width:" + width + "px;\"" : "";
+		MvcHtmlString classStr = _Functions.GetClassAttrString(cssClasses);
+		<img src="@urlHelper.Asset(imagePath, randomElt)" alt="@altText" @classStr @MvcHtmlString.Create(widthStr) />
+	}
+}
+@helper RenderImageLink(ICMSElement link, UrlHelper urlHelper, ICMSElement imageElt, String imgClass = "", int width = 0)
+{
+if (imageElt != null && imageElt.Value != "")
+{
+	if (link != null && urlHelper != null)
+	{
+		string targetStr = (!String.IsNullOrEmpty(link.GetAttributeValue("Target"))) ? string.Format("target=\"{0}\"", link.Attribute("Target").Value) : "";
+		String linkUrl = (link.URL.StartsWith("http")) ? link.URL : urlHelper.Content("~/" + link.URL); //_Functions.GetLinkAction(link, urlHelper);
+			<a href="@linkUrl" @MvcHtmlString.Create(targetStr)>@RenderImage(imageElt, urlHelper, imgClass, width)</a>
+		}
+		else
+		{
+			@RenderImage(imageElt, urlHelper, imgClass, width)
+		}
+	}
+}
+@helper RenderImageLink(ICMSElement link, UrlHelper urlHelper, String imagePath, String imgClass = "", int width = 0, ICMSEnvironment randomElt = null)
+{
+if (link != null && urlHelper != null)
+{
+	string targetStr = (link.Attribute("Target") != null && !String.IsNullOrEmpty(link.Attribute("Target").Value)) ?
+		string.Format("target=\"{0}\"", link.Attribute("Target").Value) : "";
+	String linkUrl = (link.URL.StartsWith("http")) ? link.URL : urlHelper.Content("~/" + link.URL); //_Functions.GetLinkAction(link, urlHelper);
+		<a href="@linkUrl" @MvcHtmlString.Create(targetStr)>@RenderImage(imagePath, urlHelper, "", link, imgClass, width)</a>
+	}
+	else
+	{
+		@RenderImage(imagePath, urlHelper, "", randomElt, imgClass, width)
+}
+
+}
+@helper RenderLink(string url, string linkText, string target = "", string cssClasses = "", string cssStyles = "", string title = "")
+{
+string targetStr = !string.IsNullOrEmpty(target) ?
+	string.Format("target=\"{0}\"", target) : "";
+
+string classStr = !string.IsNullOrEmpty(cssClasses) ?
+	string.Format("class=\"{0}\"", cssClasses) : "";
+
+string stylesStr = !string.IsNullOrEmpty(cssStyles) ?
+	string.Format("style=\"{0}\"", cssStyles) : "";
+
+string titleStr = !string.IsNullOrEmpty(title) ?
+	string.Format("title=\"{0}\"", title) : "";
+
+	<a href="@url" @MvcHtmlString.Create(targetStr) @MvcHtmlString.Create(classStr) @MvcHtmlString.Create(stylesStr) @MvcHtmlString.Create(titleStr)>
+		@MvcHtmlString.Create(linkText)
+	</a>
+}

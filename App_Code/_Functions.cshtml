@@ -1,0 +1,568 @@
+﻿@using Ingeniux.Runtime
+@using System.Web.Mvc
+@using System.Text.RegularExpressions
+
+@functions
+{
+	/// <summary>
+	/// Checks to see if current page's categories intersect with another set of categories.
+	/// </summary>
+	/// <param name="pageCats">Current page's categories in pipe separated values</param>
+	/// <param name="testCats">Other set of categories in pipe separated values</param>
+	/// <returns>Boolean of whether catorgies intersect.</returns>
+	public static Boolean CheckCategories(String pageCats, String testCats)
+	{
+		testCats = testCats ?? "";
+		pageCats = "|" + pageCats + "|";
+		String[] testCatIds = testCats.Split(new char[] { '|' }).Where(elt => !String.IsNullOrWhiteSpace(elt)).ToArray();
+		String[] pageCatIds = pageCats.Split(new char[] { '|' }).Where(elt => !String.IsNullOrWhiteSpace(elt)).ToArray();
+		return testCatIds.Intersect(pageCatIds).Any();
+	}
+
+	public static Boolean CheckCategories(ICMSLinkElement link, String testCats)
+	{
+		return (link != null) ? CheckCategories(link.GetAttributeValue("CategoryIds"), testCats) : false;
+	}
+
+	/// <summary>
+	/// Checks to see an event falls on today, or if today falls within the range of the start date and end date.
+	/// </summary>
+	/// <param name="startDateStr">Event start date</param>
+	/// <param name="endDateStr">Event end date</param>
+	/// <returns>Boolean of whether event is 'active' today.</returns>
+	public static Boolean CheckCurrentEvent(String startDateStr, String endDateStr = "")
+	{
+		bool isValid = false;
+		DateTime? start = GetDate(startDateStr);
+		DateTime? end = GetDate(endDateStr);
+		if (start.HasValue)
+		{
+			if (end.HasValue)
+			{
+				//if there's a start and end date, then anytime between them is valid.
+				isValid = (start.Value <= DateTime.Today) && (DateTime.Today <= end.Value);
+			}
+			else
+			{
+				//one day event; it's only current if today is the day
+				isValid = start.Value.CompareTo(DateTime.Today) == 0;
+			}
+		}
+		return isValid;
+	}
+
+	/// <summary>
+	/// Checks to see if provided date string matches numerical date.
+	/// </summary>
+	/// <param name="dateStr">Date string</param>
+	/// <param name="year">Comparison year</param>
+	/// <param name="month">Comparison month</param>
+	/// <param name="day">Comparison day</param>
+	/// <returns>Boolean of whether date dates match.</returns>
+	public static Boolean CheckDates(String dateStr, int year, int month = 0, int day = 0)
+	{
+		bool isValid = false;
+		if (!String.IsNullOrWhiteSpace(dateStr))
+		{
+			DateTime? date = GetDate(dateStr);
+			if (date != null && date.HasValue)
+			{
+				isValid = date.Value.Year == year;
+				isValid = isValid && (month == 0 || date.Value.Month == month);
+				isValid = isValid && (day == 0 || date.Value.Day == day);
+			}
+		}
+		return isValid;
+	}
+
+	/// <summary>
+	/// Is the date provided going to occur within N days?
+	/// </summary>
+	/// <param name="dateStr">Date</param>
+	/// <param name="days">Number of days to check</param>
+	/// <returns>Boolean of date falls with N days</returns>
+	public static Boolean CheckDateWithinNDays(String dateStr, int days)
+	{
+		bool isValid = false;
+		DateTime? date = GetDate(dateStr);
+		if (date.HasValue)
+		{
+			TimeSpan offset = DateTime.Today.Subtract(date.Value);
+			isValid = -1 * days <= offset.Days && offset.Days <= days;
+		}
+		return isValid;
+	}
+
+	/// <summary>
+	/// Checks to see if the current event is within a date range.
+	/// </summary>
+	/// <param name="eventStartDateStr">Event start date</param>
+	/// <param name="eventEndDateStr">Event end date</param>
+	/// <param name="viewStart">View start date</param>
+	/// <param name="viewEnd">View end date</param>
+	/// <returns>Boolean of whether event falls completely within date range.</returns>
+	public static Boolean CheckDateWithinRange(String eventStartDateStr, String eventEndDateStr, DateTime viewStart, DateTime viewEnd)
+	{
+		bool isValid = false;
+		DateTime? eventStart = GetDate(eventStartDateStr);
+		DateTime? eventEnd = GetDate(eventEndDateStr);
+		if (eventStart.HasValue)
+		{
+			// valid if start date is in the view range
+			isValid = (viewStart <= eventStart.Value && eventStart.Value <= viewEnd);
+			//if not valid and there is an end date, keep checking
+			if (!isValid && eventEnd.HasValue)
+			{
+				//valid if the end date is in the view range
+				isValid = (viewStart <= eventEnd.Value && eventEnd.Value <= viewEnd);
+
+				//or if the start date is before view start & end date is after view end
+				isValid = isValid || (eventStart.Value <= viewStart && viewEnd <= eventEnd);
+			}
+		}
+		return isValid;
+	}
+
+	public static Boolean CheckDateWithinRange(ICMSLinkElement eventItem, DateTime viewStart, DateTime viewEnd)
+	{
+		if (eventItem != null)
+		{
+			return CheckDateWithinRange(eventItem.GetAttributeValue("EventStartDate"), eventItem.GetAttributeValue("EventEndDate"), viewStart, viewEnd);
+		}
+		return false;
+	}
+
+	/// <summary>
+	/// Is the provided date (and optional end date) in the future?
+	/// </summary>
+	/// <param name="dateStr">Date</param>
+	/// <param name="endDateStr">End date</param>
+	/// <returns>Boolean of whether date and end date are in the future.</returns>
+	public static Boolean CheckUpcoming(String dateStr, String endDateStr = "")
+	{
+		bool isValid = false;
+		if (!String.IsNullOrWhiteSpace(dateStr))
+		{
+			DateTime? date = GetDate(dateStr);
+			if (date != null && date.HasValue)
+			{
+				isValid = date.Value >= DateTime.Today;
+			}
+		}
+		if (!String.IsNullOrWhiteSpace(endDateStr))
+		{
+			isValid = isValid || CheckUpcoming(endDateStr);
+		}
+		return isValid;
+	}
+
+	public static Boolean CheckUpcoming(ICMSLinkElement item)
+	{
+		return CheckUpcoming(item.GetAttributeValue("EventStartDate"), item.GetAttributeValue("EventEndDate"));
+	}
+
+	/// <summary>
+	/// Adds "..." to end of string after N number of characters.
+	/// </summary>
+	/// <param name="initialValue">Full string</param>
+	/// <param name="numCharacters">Number of characters at which point to cut off string and add "..."</param>
+	/// <returns>String with added "..." on end.</returns>
+	public static String Ellipsis(String initialValue, int numCharacters)
+	{
+		if (initialValue != null && initialValue.Length > numCharacters)
+		{
+			string descWithoutTags = Regex.Replace(initialValue, "<[^>]+>", " ");
+			string descWithoutMultipleSpaces = Regex.Replace(descWithoutTags, @"\s+", " ");
+
+			// if it's shorter than the requested length once special characters are removed, return the original.
+			if (descWithoutMultipleSpaces.Length < numCharacters)
+				return initialValue;
+
+			//truncate to the desired length, then go back to the last word.
+			return descWithoutMultipleSpaces.Substring(0, numCharacters).SubstringBefore(" ", true) + "...";
+		}
+		return initialValue;
+	}
+
+	/// <summary>
+	/// Returns a page's taxonomy navigation child categories.
+	/// </summary>
+	/// <param name="page">Page</param>
+	/// <param name="taxonomyName">Name of taxonomy navigation</param>
+	/// <param name="recursive">Whether to search taxonomy navigation recursively</param>
+	/// <returns>List of categories</returns>
+	public static List<ICMSNavigatingCategory> GetChildCategories(ICMSPage page, String taxonomyName, Boolean recursive = false, bool includeRoot = false, bool recursiveCats = true)
+	{
+		var list = new List<ICMSNavigatingCategory>();
+		if (page != null)
+		{
+			var taxNav = page.GetTaxonomyNavigation(taxonomyName, recursive);
+			if (taxNav != null)
+			{
+				var parentcats = taxNav.NavigatingCategories;
+				if (parentcats != null)
+				{
+					foreach (var parent in parentcats)
+					{
+						if (includeRoot)
+						{
+							list.Add(parent);
+						}
+						list.AddRange(GetChildCategories(parent, recursiveCats: recursiveCats));
+					}
+				}
+			}
+		}
+		return list;
+	}
+
+	/// <summary>
+	/// Returns a categories child categories
+	/// </summary>
+	/// <param name="cat">Parent category</param>
+	/// <param name="recursiveCats">bool to include sub-categories</param>
+	/// <returns>List of child categories</returns>
+	public static List<ICMSNavigatingCategory> GetChildCategories(ICMSNavigatingCategory cat, bool recursiveCats = true)
+	{
+		//return all levels below this category
+		var list = new List<ICMSNavigatingCategory>();
+		if (cat != null)
+		{
+			foreach (var child in cat.Children)
+			{
+				list.Add(child);
+				if (recursiveCats)
+				{
+					list.AddRange(GetChildCategories(child));
+				}
+			}
+		}
+		return list;
+	}
+
+	/// <summary>
+	/// Given a class name return a class attribute string, in the format of class="className".
+	/// </summary>
+	/// <param name="className">Class name</param>
+	/// <param name="condition">Optional boolean condition</param>
+	/// <returns>Class attribute MvcHtmlString</returns>
+	public static MvcHtmlString GetClassAttrString(String className, bool condition = true)
+	{
+		String retStr = "";
+		if (!String.IsNullOrWhiteSpace(className) && condition)
+		{
+			retStr = String.Format("class=\"{0}\"", className);
+		}
+		return new MvcHtmlString(retStr);
+	}
+
+	/// <summary>
+	/// Convert a date string to a DateTime object.
+	/// </summary>
+	/// <param name="dateStr">Date string</param>
+	/// <returns>DateTime object</returns>
+	public static DateTime? GetDate(String dateStr)
+	{
+		DateTime? returnVal = null;
+		if (!String.IsNullOrWhiteSpace(dateStr))
+		{
+			if (dateStr.IndexOf("T") == -1)
+			{
+				returnVal = dateStr.ToLocalDate();
+			}
+			else
+			{
+				//old date format is 20121107T17:47:28
+				//valid format would be yyyy-mm-dd hh:mm:ssZ
+				String newStr = dateStr.Substring(0, 4) + "-" + dateStr.Substring(4, 2) + "-" + dateStr.Substring(6, 2) + " " + dateStr.Substring(9) + "Z";
+				DateTime date = new DateTime();
+				if (DateTime.TryParse(newStr, out date))
+				{
+					returnVal = date;
+				}
+			}
+		}
+		return returnVal;
+	}
+
+	public static IEnumerable<ICMSLinkElement> GetDistinctItems(IEnumerable<ICMSLinkElement> items)
+	{
+		return items.Distinct<ICMSLinkElement>(new CMSLinkElementComparer());
+	}
+
+	public class CMSLinkElementComparer : IEqualityComparer<ICMSLinkElement>
+	{
+		public bool Equals(ICMSLinkElement x, ICMSLinkElement y)
+		{
+			return x.ID == y.ID;
+		}
+
+		public int GetHashCode(ICMSLinkElement obj)
+		{
+			return obj.ToString().GetHashCode();
+		}
+	}
+
+	/// <summary>
+	/// Get friendly schema name for search results Type display
+	/// </summary>
+	/// <param name="schemaName">The schema name of the page</param>
+	/// <returns>A more friendly version of the schema name - Blog Detail instead of BlogDetail</returns>
+	public static string GetFriendlySchemaName(String schemaName)
+	{
+		//first, split into separate words between UpperCamelBreakdowns
+		String friendly = Regex.Replace(
+				Regex.Replace(
+				   schemaName,
+				   @"(\P{Ll})(\P{Ll}\p{Ll})",
+				   "$1 $2"
+			   ),
+		   @"(\p{Ll})(\P{Ll})",
+		   "$1 $2"
+		);
+		//any other updates you need can go here
+		//if (friendly != "Detail")
+		//{
+		//	friendly = friendly.Replace("Detail", "");
+		//}
+		return friendly;
+	}
+
+	/// <summary>
+	/// Get a link's action suitable for use in the 'a' attribute.
+	/// </summary>
+	/// <param name="link">Link element</param>
+	/// <param name="url">Url helper</param>
+	/// <returns>Link action</returns>
+	public static string GetLinkAction(ICMSLinkElement link, UrlHelper url, bool includeQueryString = false)
+	{
+		String linkUrl = "";
+		if (link != null)
+		{
+			linkUrl = (!String.IsNullOrWhiteSpace(link.GetAttributeValue("CustomURL"))) ? link.GetAttributeValue("CustomURL") : link.URL;
+			linkUrl = linkUrl.StartsWith("http") || linkUrl.StartsWith("//") || linkUrl.StartsWith("ftp") || linkUrl.StartsWith("email:") ? linkUrl : url.Content("~/" + linkUrl);
+			if (includeQueryString)
+			{
+				linkUrl += linkUrl.Contains("?") ? "&" : "?";
+			}
+		}
+		//remove tfrm=4 for page preview
+		return linkUrl.Replace("&tfrm=4", "");
+	}
+	/// <summary>
+	/// Get a link's name suitable for use in the 'a' element value.
+	/// </summary>
+	/// <param name="link">Link element</param>
+	/// <param name="useNaveName">Override for using the navigation element override</param>
+	/// <returns>Link name</returns>
+	public static string GetLinkName(ICMSLinkElement link, bool useNavName = false)
+	{
+		String linkText = "";
+		if (link != null)
+		{
+			if (link.Schema == null || (link.Schema != "Folder" && (link.Schema.IndexOf("Component") == -1) || !String.IsNullOrWhiteSpace(link.GetAttributeValue("CustomURL"))))
+			{
+				linkText = (!String.IsNullOrWhiteSpace(link.LinkName)) ? link.LinkName : link.Name;
+				linkText = (useNavName && link.GetAttributeValue("NavigationOverride") != "") ? link.GetAttributeValue("NavigationOverride") : linkText;
+			}
+		}
+		//remove tfrm=4 for page preview
+		return linkText;
+	}
+
+	/// <summary>
+	/// Get a link element from the Site Control.
+	/// </summary>
+	/// <param name="pageObj">Page</param>
+	/// <param name="linkName">Name of link on Site Control</param>
+	/// <returns>Link element</returns>
+	public static ICMSLinkElement GetLinkFromSiteControl(CMSPageRequest pageObj, String linkName)
+	{
+		ICMSLinkElement link = null;
+		ICMSElement siteControl = GetSiteControl(pageObj);
+		if (siteControl != null)
+		{
+			link = siteControl.GetLinkItem(linkName, false);
+		}
+		return link;
+	}
+
+	public static MvcHtmlString GetLinkTarget(ICMSLinkElement link)
+	{
+		String target = "";
+		if (link != null && !String.IsNullOrWhiteSpace(link.GetAttributeValue("Target")))
+		{
+			target = "target=\"" + link.GetAttributeValue("Target") + "\"";
+		}
+		return MvcHtmlString.Create(target);
+	}
+
+	public static String GetLocalizedString(CMSPageRequest page, String itemName, String defaultValue = "")
+	{
+		defaultValue = defaultValue != "" ? defaultValue : itemName;
+		String retVal = "";
+		ICMSElement siteControl = _Functions.GetSiteControl(page);
+		if (siteControl != null && itemName != "")
+		{
+			ICMSElement languageControl = siteControl.Element("LocalizationSettingsComponent");
+			retVal = languageControl != null ? languageControl.GetElementValue(itemName) : retVal;
+		}
+
+		return retVal != "" ? retVal : defaultValue;
+	}
+
+	public static String GetResourceType(ICMSLinkElement resource)
+	{
+		String retVal = resource.GetAttributeValue("ResourceType");
+		retVal = resource.Schema == "BlogDetail" ? "Blog Post" : retVal;
+		retVal = resource.Schema == "CaseStudy" ? "Case Study" : retVal;
+		return retVal;
+	}
+
+	/// <summary>
+	/// Get a query string value from the IGX_Info element of a page's XML.
+	/// </summary>
+	/// <param name="page">Page</param>
+	/// <param name="querystringName">Query string name as it appears in address bar.</param>
+	/// <param name="defaultValue">Optional default value</param>
+	/// <returns>Query string value</returns>
+	public static String GetQuerystring(CMSPageRequest page, String querystringName, String defaultValue = "")
+	{
+		String retVal = defaultValue;
+		if (Request.QueryString[querystringName] != "")
+		{
+			//if there is a querystring with the right name, grab it
+			retVal = Request.QueryString[querystringName] != null && Request.QueryString[querystringName] != "" ? Request.QueryString[querystringName].ToString() : defaultValue;
+		}
+		else if (page != null)
+		{
+			//otherwise, we may be in preview.  Try grabbing the querystring from IGX_Info
+			var igxInfo = page.Element("IGX_Info");
+			if (igxInfo != null)
+			{
+				var get = igxInfo.Element("GET");
+				retVal = (get != null) ? get.GetElementValue(querystringName) : defaultValue;
+			}
+		}
+		return retVal != "" ? retVal : defaultValue;
+	}
+
+	public static MvcHtmlString GetSelectedAttribute(bool selected)
+	{
+		String retVal = selected ? "selected=\"selected\"" : "";
+		return new MvcHtmlString(retVal);
+	}
+	public static ICMSElement GetSiteControl(CMSPageRequest pageObj)
+	{
+		ICMSElement siteControl = (pageObj != null) ? pageObj.Element("SiteControl") : null;
+		return siteControl;
+	}
+
+	/// <summary>
+	/// Create a standard time "XX:XX am/pm" string from a time element value.
+	/// </summary>
+	/// <param name="time">Time</param>
+	/// <returns>String of time in "XX:XX am/pm" format</returns>
+	public static String GetTime(String time)
+	{
+		String returnVal = "";
+		if (time != "undefined" && !String.IsNullOrWhiteSpace(time))
+		{
+			if (time.Contains("T"))
+			{
+				//old time object
+				//get a dateTime obj from it
+				DateTime? dateobj = GetDate(time);
+				if (dateobj.HasValue)
+				{
+					returnVal = dateobj.Value.ToShortTimeString();
+				}
+			}
+			else
+			{
+				try
+				{
+					String[] sections = time.Split(new char[] { ':' });
+					int hours = int.Parse(sections[0]);
+					int minutes = int.Parse(sections[1]);
+					String ampm = (hours >= 12) ? "p.m." : "a.m.";  //noon is 12:00 pm, midnight 12:00 am
+																	//if (hours == 12 && minutes == 0)
+																	//     ampm = "noon";
+																	//if (hours == 0 && minutes == 0)
+																	//     ampm = "midnight";
+
+					hours = (hours + 11) % 12 + 1;
+					returnVal = hours + ":" + sections[1] + " " + ampm;
+				}
+				catch (Exception e) { }
+			}
+		}
+		return returnVal;
+	}
+
+	/// <summary>
+	/// Attempts to convert a string to a integer.
+	/// </summary>
+	/// <param name="test">String containing an int.</param>
+	/// <param name="defaultVal">Default return value.</param>
+	/// <returns>Integer</returns>
+	public static int IntegerOrDefault(String test, int defaultVal)
+	{
+		int returnVal = defaultVal;
+		if (!String.IsNullOrWhiteSpace(test)) { int.TryParse(test, out returnVal); } //check if a year was passed in
+		return returnVal;
+	}
+
+	public static string PadInteger(int integer)
+	{
+		//pad to 2-digit string for use in CMS dates
+		String returnVal = "" + integer;
+		if (integer < 10)
+		{
+			returnVal = "0" + integer;
+		}
+		return returnVal;
+	}
+
+	public static String TextWithDefault(String text, String defaultText)
+	{
+		return !String.IsNullOrWhiteSpace(text) ? text : defaultText;
+	}
+
+	/// <summary>
+	/// Returns the current page's URL
+	/// </summary>
+	/// <param name="page">Page</param>
+	/// <param name="url">Url helper</param>
+	/// <returns>String of current page's URL</returns>
+	public static String ThisPageUrl(ICMSPage page, UrlHelper url, bool includeQueryString = false)
+	{
+		String pageUrl = "";
+		var ancestors = page.GetNavigationItems("AncestorNavigation", NavigationElementType.Navigation, false, false);
+		if (ancestors != null && ancestors.Any())
+		{
+			pageUrl = ancestors.LastOrDefault().URL;
+		}
+		pageUrl = url.ProcessUrl(pageUrl);
+		if (includeQueryString)
+		{
+			pageUrl += pageUrl.Contains("?") ? "&" : "?";
+		}
+		return pageUrl;
+	}
+
+	public static MvcHtmlString WrapPTag(string value)
+	{
+		return new MvcHtmlString((value.IndexOf("</p>") == -1) ? "<p>" + value + "</p>" : value);
+	}
+
+	public static String VerifyInteger(String test)
+	{
+		int temp;
+		if (int.TryParse(test, out temp))
+		{
+			return test;
+		}
+		return "";
+	}
+}
