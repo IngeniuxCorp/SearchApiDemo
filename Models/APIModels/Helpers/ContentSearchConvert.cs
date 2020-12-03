@@ -167,7 +167,8 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 						return new Content()
 						{
 							Id = r.UniqueID,
-							Name = r.Name
+							Name = r.Name,
+							Type = r.Type
 						};
 				}
 			});
