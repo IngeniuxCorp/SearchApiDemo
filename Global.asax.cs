@@ -15,6 +15,7 @@ using System.IO;
 using System.Web.Optimization;
 using System.Web.Hosting;
 using Microsoft.ApplicationInsights.Extensibility;
+using System.Web.Http;
 
 namespace Ingeniux.Runtime
 {
@@ -32,6 +33,8 @@ namespace Ingeniux.Runtime
 
 			ViewEngines.Engines.Clear();
 			ViewEngines.Engines.Add(new CMSMobileRazorViewEngine());
+
+			GlobalConfiguration.Configure(WebApiConfig.Register);
 
 			AreaRegistration.RegisterAllAreas();
 

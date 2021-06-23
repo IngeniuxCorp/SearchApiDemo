@@ -5,11 +5,12 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Web;
+using System.Web.Http;
 using System.Web.Mvc;
 
 namespace Ingeniux.Runtime.Controllers
 {
-    public abstract class DWController : Controller
+    public abstract class SearchApiController : ApiController
     {
 		private const int DEFAULT_OCAPI_WARNING_TIMEOUT = 2000;
 
@@ -39,16 +40,16 @@ namespace Ingeniux.Runtime.Controllers
 			}
 		}
 		//public RuntimeLogger Logger = RuntimeLogger.GetLogger(CMSPageFactory.GetDefaultSitePath());
-		public ContentResult GetJSONContent(object obj)
-		{
-			JsonSerializerSettings settings = new JsonSerializerSettings();
+		//public ContentResult GetJSONContent(object obj)
+		//{
+		//	JsonSerializerSettings settings = new JsonSerializerSettings();
 
-			settings.ContractResolver = new DWContractResolver();
-			settings.NullValueHandling = NullValueHandling.Ignore;
+		//	settings.ContractResolver = new SearchApiContractResolver();
+		//	settings.NullValueHandling = NullValueHandling.Ignore;
 
-			string json = JsonConvert.SerializeObject(obj, settings);
+		//	string json = JsonConvert.SerializeObject(obj, settings);
 
-			return Content(json, "application/json", System.Text.Encoding.UTF8);
-		}
+		//	return Content(json, "application/json", System.Text.Encoding.UTF8);
+		//}
 	}
 }

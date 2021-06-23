@@ -15,20 +15,17 @@ using static Ingeniux.Runtime.Models.APIModels.Helpers.ContentSearchConvert;
 
 namespace Ingeniux.Runtime.Controllers
 {
-	[RoutePrefix("api/content_search")]
-	public class ContentSearchController:DWController
+	[RoutePrefix("api/search")]
+	public class SearchController: SearchApiController
     {
 		public const string JsonContentType = "application/json";
 
 		[HttpGet]
 		[Route("")]
-		public System.Web.Mvc.ContentResult ContentSearch(string sort ="", int start = 0, int count = 10,  string q = "")
+		public ContentSearchResult ContentSearch(string query, string sort ="", int start = 0, int count = 10)
 		{
-			ContentSearchResult results = ContentSearchHelper.GetSearchResults(Request, sort, start, count, q);
-
-			string json = JsonConvert.SerializeObject(results,Formatting.Indented);
-
-			return Content(json, JsonContentType, System.Text.Encoding.UTF8);
+			ContentSearchResult results = ContentSearchHelper.GetSearchResults(new KeyValuePair<string,string>[0], sort, start, count, query).Result;
+			return results;
 		}
 	}
 }

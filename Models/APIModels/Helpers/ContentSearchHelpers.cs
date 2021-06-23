@@ -62,22 +62,13 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 			}
 
 			decimal pageNum = (((decimal)skip + take) / take);
-			page = Convert.ToInt32(Math.Ceiling(pageNum));
-			//page = ((skip + take) / take);
+			page = Convert.ToInt32(Math.Ceiling(pageNum));;
 			size = take;
 
 			var searchResults = search.QueryFinal(siteSearch, out c, instructions, page: page, size: size);
 			
 			var categoryStatsProviders = new Ingeniux.Search.StatsProviders.CategoryStatsProviders(siteSearch);
 			categoryStats = categoryStatsProviders.GetStats(searchResults).Where(p => p.Value > 0);
-
-			//JsonSerializer serializer = new JsonSerializer();
-			//using (StreamWriter sw = new StreamWriter(@"c:\test\catStatsTraeger.json"))
-			//using (JsonWriter writer = new JsonTextWriter(sw))
-			//{
-			//	writer.Formatting = Formatting.Indented;
-			//	serializer.Serialize(writer, categoryStats);
-			//}
 
 			count = searchResults.TotalCount;
 
@@ -115,64 +106,57 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 		private static readonly HashSet<string> _SkippedRefinements = new HashSet<string>()
 		{
 			"type",
-			"fdid",
+			"xid",
 			"CategoryNodes"
 		};
 
-		public static ContentSearchResult GetSearchResults(HttpRequestBase request, string sort = "", int start = 0, int count = 10, string query = "")
+		public static async Task<ContentSearchResult> GetSearchResults(IEnumerable<KeyValuePair<string,string>> refinements = null, string sort = "", int page = 0, int size = 10, string query = "")
 		{
+			System.Diagnostics.Debugger.Launch();
 			int c;
 			IEnumerable<KeyValuePair<string, int>> categoryStats;
 
-			Ingeniux.Search.Search search = new Ingeniux.Search.Search(request);
+			Ingeniux.Search.Search search = new Ingeniux.Search.Search();
 			var siteSearch = CMSPageDefaultController.GetSiteSearch();
 			SearchInstruction instructions = new SearchInstruction(siteSearch.DefaultQueryAnalyzer);
 			var apiSourceName = ConfigurationManager.AppSettings["APISourceName"] ?? string.Empty;
-			if (string.IsNullOrWhiteSpace(apiSourceName))
+			if (!string.IsNullOrWhiteSpace(apiSourceName))
 			{
 				instructions.AddQuery(new TermQuery(new Term("_SOURCENAME_", apiSourceName)), Occur.MUST);
 			}
 			
 
-			var refinementsKeys = request.QueryString.AllKeys.Where(k => _REFINEMENT_PATTERN.IsMatch(k));
+			//var refinementsKeys = request.QueryString.AllKeys.Where(k => _REFINEMENT_PATTERN.IsMatch(k));
 
-			var refinementRequests = refinementsKeys
-				.Select(k => request[k])
-				.Where(v => !string.IsNullOrWhiteSpace(v));
-
-
-			var refinements = _GetSelectedRefinements(refinementRequests);
+			//var refinementRequests = refinementsKeys
+			//	.Select(k => request[k])
+			//	.Where(v => !string.IsNullOrWhiteSpace(v));
 
 
-			List<Task> queryTasks = new List<Task>();
+			//var refinements = _GetSelectedRefinements(refinementRequests);
 
-			if (!string.IsNullOrWhiteSpace(query))
+			Task queryTask = !string.IsNullOrWhiteSpace(query) ? Task.Factory.StartNew(() =>
 			{
-				queryTasks.Add(Task.Factory.StartNew(() =>
+				string[] termsA = query?.Split(',')
+					.Select(t => $"*{t}*").ToArray() ?? new string[0];
+
+				IEnumerable<string> fieldNames = _GetTerms(siteSearch);
+
+				BooleanQuery termQuery = new BooleanQuery();
+
+				foreach (var fieldName in fieldNames)
 				{
-					string[] termsA = query?.Split(',')
-						.Select(t => $"*{t}*").ToArray() ?? new string[0];
+					termQuery.Add(instructions.GetFieldTermQuery(
+						Occur.SHOULD,
+						fieldName,
+						true,
+						termsA
+					));
+				}
 
-					IEnumerable<string> fieldNames = _GetTerms(siteSearch);
-
-					BooleanQuery termQuery = new BooleanQuery();
-
-					foreach (var fieldName in fieldNames)
-					{
-						termQuery.Add(instructions.GetFieldTermQuery(
-							Occur.SHOULD,
-							fieldName,
-							true,
-							termsA
-						));
-					}
-
-					instructions.AddQuery(termQuery, Occur.MUST);
-
-					//instructions.AddQuery(
-					//	instructions.GetFullTextTermQuery(Occur.MUST, false, termsA));
-				}));
-			}
+				instructions.AddQuery(termQuery, Occur.MUST);
+			}) : null;
+			
 
 
 
@@ -205,9 +189,9 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 				}
 			}
 
-			if (refinements.Any(r => r.Key.Equals("fdid", StringComparison.InvariantCultureIgnoreCase)))
+			if (refinements.Any(r => r.Key.Equals("xid", StringComparison.InvariantCultureIgnoreCase)))
 			{
-				string fdid = refinements.FirstOrDefault(r => r.Key.Equals("fdid", StringComparison.InvariantCultureIgnoreCase)).Value;
+				string fdid = refinements.FirstOrDefault(r => r.Key.Equals("xid", StringComparison.InvariantCultureIgnoreCase)).Value;
 				if (!string.IsNullOrWhiteSpace(fdid))
 				{
 					var sitePath = ConfigurationManager.AppSettings["PageFilesLocation"];
@@ -308,10 +292,22 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 					instructions.AddSort(new Lucene.Net.Search.SortField(fieldName, CultureInfo.InvariantCulture, sortReverse));
 				}
 			}
-			Task.WaitAll(queryTasks.ToArray());
-			var searchResults = _GetSkipTakeSearchResults(start, count, search, siteSearch, instructions, out c, out categoryStats);
 
-			ContentSearchResult results = ContentSearchConvert.ConvertContentSearchResults(searchResults, c, request, refinements, categoryStats, start);
+			if(queryTask != null)
+            {
+				await queryTask;
+			}
+			
+			//var searchResults = _GetSkipTakeSearchResults(start, count, search, siteSearch, instructions, out c, out categoryStats);
+
+
+			var searchResults = search.QueryFinal(siteSearch, out c, instructions, page: page, size: size);
+
+			var categoryStatsProviders = new Ingeniux.Search.StatsProviders.CategoryStatsProviders(siteSearch);
+			categoryStats = categoryStatsProviders.GetStats(searchResults).Where(p => p.Value > 0);
+
+
+			ContentSearchResult results = ContentSearchConvert.ConvertContentSearchResults(searchResults, c, refinements, categoryStats, page);
 
 			return results;
 		}
@@ -392,15 +388,15 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 
 		}
 
-		public static SearchContentResult GetPagesById(HttpRequestBase request, IEnumerable<string> pageIds)
+		public static SearchContentResult GetPagesById(IEnumerable<string> pageIds)
 		{
 			int c;
 			
-			Ingeniux.Search.Search search = new Ingeniux.Search.Search(request);
+			Ingeniux.Search.Search search = new Ingeniux.Search.Search();
 			var siteSearch = CMSPageDefaultController.GetSiteSearch(); 
 			SearchInstruction instructions = new SearchInstruction(siteSearch.DefaultQueryAnalyzer);
 			var apiSourceName = ConfigurationManager.AppSettings["APISourceName"] ?? string.Empty;
-			if (string.IsNullOrWhiteSpace(apiSourceName))
+			if (!string.IsNullOrWhiteSpace(apiSourceName))
 			{
 				instructions.AddQuery(new TermQuery(new Term("_SOURCENAME_", apiSourceName)), Occur.MUST);
 			}
@@ -423,7 +419,7 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 
 
 
-			SearchContentResult result = ContentSearchConvert.ConvertContentResults(searchResults, searchResults.Count(), request);
+			SearchContentResult result = ContentSearchConvert.ConvertContentResults(searchResults, searchResults.Count());
 
 			return result;
 		}

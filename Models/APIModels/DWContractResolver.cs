@@ -7,7 +7,7 @@ using System.Web;
 
 namespace Ingeniux.Runtime.Models.APIModels
 {
-	public class DWContractResolver : DefaultContractResolver
+	public class SearchApiContractResolver : DefaultContractResolver
 	{
 		protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
 		{

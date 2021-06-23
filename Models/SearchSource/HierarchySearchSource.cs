@@ -35,10 +35,10 @@ namespace Ingeniux.Runtime.Models.SearchSource
 		{
 
 			var doc = e.Document;
-			_AddLocationToDocument(doc);
+			_AddHierarchyToDocument(doc);
 		}
 
-		private void _AddLocationToDocument(Document doc)
+		private void _AddHierarchyToDocument(Document doc)
 		{
 			var pageId = doc.Get("xID");
 			if (string.IsNullOrWhiteSpace(pageId))
@@ -56,9 +56,6 @@ namespace Ingeniux.Runtime.Models.SearchSource
 			{
 				Logger.Info($"could not find HIERARCHY for {pageId}");
 			}
-
-			
-
 		}
 
 		protected override void parseXmlNodeForFields(XElement element, SearchItem doc, Dictionary<string, string> urls, SearchType typeEntry, string ancestorPrefix, int listItemIndex, HashSet<string> ancestorCompIds, CmsIndexingLogs indexLogs, AssetMap assetMap)

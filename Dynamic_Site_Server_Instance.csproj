@@ -54,7 +54,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Abot, Version=1.5.0.0, Culture=neutral, PublicKeyToken=e72f548f16b64a08, processorArchitecture=MSIL">
-      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.9-prerelease\lib\net452\Abot.dll</HintPath>
+      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.13\lib\net452\Abot.dll</HintPath>
     </Reference>
     <Reference Include="AjaxMin, Version=5.14.5506.26196, Culture=neutral, PublicKeyToken=21ef50ce11b5d80f, processorArchitecture=MSIL">
       <HintPath>packages\AjaxMin.5.14.5506.26202\lib\net40\AjaxMin.dll</HintPath>
@@ -65,9 +65,8 @@
     <Reference Include="Antlr3.Runtime, Version=3.5.0.2, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
       <HintPath>packages\Antlr.3.5.0.2\lib\Antlr3.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="AuthenticatorPlugin, Version=10.3.156.0, Culture=neutral, PublicKeyToken=1b3b2e95d16e0add">
-      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.156-prerelease\lib\net452\AuthenticatorPlugin.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="AuthenticatorPlugin, Version=10.3.184.0, Culture=neutral, PublicKeyToken=1b3b2e95d16e0add, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.184-prerelease\lib\net452\AuthenticatorPlugin.dll</HintPath>
     </Reference>
     <Reference Include="AutoMapper, Version=7.0.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>packages\AutoMapper.7.0.1\lib\net45\AutoMapper.dll</HintPath>
@@ -81,74 +80,62 @@
     <Reference Include="dotless.Core, Version=1.5.2.0, Culture=neutral, PublicKeyToken=96b446c9e63eae34, processorArchitecture=MSIL">
       <HintPath>packages\dotless.1.5.2\lib\dotless.Core.dll</HintPath>
     </Reference>
-    <Reference Include="DotNetZip, Version=1.10.1.0, Culture=neutral, PublicKeyToken=6583c7c814667745">
-      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.156-prerelease\lib\net452\DotNetZip.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="DotNetZip, Version=1.10.1.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.184-prerelease\lib\net452\DotNetZip.dll</HintPath>
     </Reference>
-    <Reference Include="DynamicExecuteHelper, Version=10.3.156.0, Culture=neutral, PublicKeyToken=1b3b2e95d16e0add">
-      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.156-prerelease\lib\net452\DynamicExecuteHelper.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="DynamicExecuteHelper, Version=10.3.184.0, Culture=neutral, PublicKeyToken=1b3b2e95d16e0add, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.184-prerelease\lib\net452\DynamicExecuteHelper.dll</HintPath>
     </Reference>
-    <Reference Include="DynamicExecuteImplementations, Version=10.3.156.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.156-prerelease\lib\net452\DynamicExecuteImplementations.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="DynamicExecuteImplementations, Version=10.3.184.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.184-prerelease\lib\net452\DynamicExecuteImplementations.dll</HintPath>
     </Reference>
-    <Reference Include="DynamicRenderingEngine, Version=10.3.156.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.156-prerelease\lib\net452\DynamicRenderingEngine.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="DynamicRenderingEngine, Version=10.3.184.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.184-prerelease\lib\net452\DynamicRenderingEngine.dll</HintPath>
     </Reference>
     <Reference Include="EcmaScript.NET, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\EcmaScript.Net.1.0.1.0\lib\net20\EcmaScript.NET.dll</HintPath>
     </Reference>
-    <Reference Include="FiftyOne.Foundation, Version=3.2.11.1, Culture=neutral, PublicKeyToken=1b3b2e95d16e0add">
-      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.156-prerelease\lib\net452\FiftyOne.Foundation.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="FiftyOne.Foundation, Version=3.2.11.1, Culture=neutral, PublicKeyToken=1b3b2e95d16e0add, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.184-prerelease\lib\net452\FiftyOne.Foundation.dll</HintPath>
     </Reference>
-    <Reference Include="filtdump, Version=2.14.9.0, Culture=neutral, PublicKeyToken=4a949968764df20e, processorArchitecture=MSIL">
-      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.9-prerelease\lib\net452\filtdump.exe</HintPath>
+    <Reference Include="filtdump, Version=2.14.13.0, Culture=neutral, PublicKeyToken=4a949968764df20e, processorArchitecture=AMD64">
+      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.13\lib\net452\filtdump.exe</HintPath>
     </Reference>
-    <Reference Include="FilterWrapper, Version=2.14.9.0, Culture=neutral, PublicKeyToken=4a949968764df20e, processorArchitecture=MSIL">
-      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.9-prerelease\lib\net452\FilterWrapper.dll</HintPath>
+    <Reference Include="FilterWrapper, Version=2.14.13.0, Culture=neutral, PublicKeyToken=4a949968764df20e, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.13\lib\net452\FilterWrapper.dll</HintPath>
     </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.7.1.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <HintPath>packages\HtmlAgilityPack.1.7.1\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
-    <Reference Include="HtmlDiff, Version=1.3.0.0, Culture=neutral, PublicKeyToken=5562abc49e58e8d7">
-      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.156-prerelease\lib\net452\HtmlDiff.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="HtmlDiff, Version=1.3.0.0, Culture=neutral, PublicKeyToken=5562abc49e58e8d7, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.184-prerelease\lib\net452\HtmlDiff.dll</HintPath>
     </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73">
-      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.156-prerelease\lib\net452\ICSharpCode.SharpZipLib.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.184-prerelease\lib\net452\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
-    <Reference Include="IGXAssetManipulators90, Version=10.3.156.0, Culture=neutral, PublicKeyToken=1b3b2e95d16e0add">
-      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.156-prerelease\lib\net452\IGXAssetManipulators90.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="IGXAssetManipulators90, Version=10.3.184.0, Culture=neutral, PublicKeyToken=1b3b2e95d16e0add, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.184-prerelease\lib\net452\IGXAssetManipulators90.dll</HintPath>
     </Reference>
-    <Reference Include="IGXRuntimeAPI, Version=10.3.156.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.156-prerelease\lib\net452\IGXRuntimeAPI.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="IGXRuntimeAPI, Version=10.3.184.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.184-prerelease\lib\net452\IGXRuntimeAPI.dll</HintPath>
     </Reference>
-    <Reference Include="IgxStemmerPlugin, Version=2.14.9.0, Culture=neutral, PublicKeyToken=4a949968764df20e, processorArchitecture=MSIL">
-      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.9-prerelease\lib\net452\IgxStemmerPlugin.dll</HintPath>
+    <Reference Include="IgxStemmerPlugin, Version=2.14.13.0, Culture=neutral, PublicKeyToken=4a949968764df20e, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.13\lib\net452\IgxStemmerPlugin.dll</HintPath>
     </Reference>
-    <Reference Include="Ingeniux.CMS.Common, Version=10.3.156.0, Culture=neutral, PublicKeyToken=1b3b2e95d16e0add">
-      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.156-prerelease\lib\net452\Ingeniux.CMS.Common.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Ingeniux.CMS.Common, Version=10.3.184.0, Culture=neutral, PublicKeyToken=1b3b2e95d16e0add, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.184-prerelease\lib\net452\Ingeniux.CMS.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Ingeniux.CMS.CSAPI, Version=10.3.156.0, Culture=neutral, PublicKeyToken=1b3b2e95d16e0add">
-      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.156-prerelease\lib\net452\Ingeniux.CMS.CSAPI.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Ingeniux.CMS.CSAPI, Version=10.3.184.0, Culture=neutral, PublicKeyToken=1b3b2e95d16e0add, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.184-prerelease\lib\net452\Ingeniux.CMS.CSAPI.dll</HintPath>
     </Reference>
-    <Reference Include="Ingeniux.CMS.Models, Version=10.3.156.0, Culture=neutral, PublicKeyToken=1b3b2e95d16e0add">
-      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.156-prerelease\lib\net452\Ingeniux.CMS.Models.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Ingeniux.CMS.Models, Version=10.3.184.0, Culture=neutral, PublicKeyToken=1b3b2e95d16e0add, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.184-prerelease\lib\net452\Ingeniux.CMS.Models.dll</HintPath>
     </Reference>
-    <Reference Include="Ingeniux.Search, Version=2.14.9.0, Culture=neutral, PublicKeyToken=4a949968764df20e, processorArchitecture=MSIL">
-      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.9-prerelease\lib\net452\Ingeniux.Search.dll</HintPath>
+    <Reference Include="Ingeniux.Search, Version=2.14.13.0, Culture=neutral, PublicKeyToken=4a949968764df20e, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.13\lib\net452\Ingeniux.Search.dll</HintPath>
     </Reference>
-    <Reference Include="Ingeniux.Support, Version=2.14.9.0, Culture=neutral, PublicKeyToken=4a949968764df20e, processorArchitecture=MSIL">
-      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.9-prerelease\lib\net452\Ingeniux.Support.dll</HintPath>
+    <Reference Include="Ingeniux.Support, Version=2.14.13.0, Culture=neutral, PublicKeyToken=4a949968764df20e, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.13\lib\net452\Ingeniux.Support.dll</HintPath>
     </Reference>
     <Reference Include="Lucene.Net.Contrib.Spatial, Version=3.0.3.0, Culture=neutral, PublicKeyToken=85089178b9ac3181, processorArchitecture=MSIL">
       <HintPath>packages\Lucene.Net.Contrib.Spatial.3.0.3\lib\net40\Lucene.Net.Contrib.Spatial.dll</HintPath>
@@ -268,20 +255,17 @@
     <Reference Include="Quartz, Version=3.0.7.0, Culture=neutral, PublicKeyToken=f6b8c98a402cc8a4, processorArchitecture=MSIL">
       <HintPath>packages\Quartz.3.0.7\lib\net452\Quartz.dll</HintPath>
     </Reference>
-    <Reference Include="Raven.Abstractions, Version=3.5.10.0, Culture=neutral, PublicKeyToken=37f41c7f99471593">
-      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.156-prerelease\lib\net452\Raven.Abstractions.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Raven.Abstractions, Version=3.5.10.0, Culture=neutral, PublicKeyToken=37f41c7f99471593, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.184-prerelease\lib\net452\Raven.Abstractions.dll</HintPath>
     </Reference>
-    <Reference Include="Raven.Client.Lightweight, Version=3.5.10.0, Culture=neutral, PublicKeyToken=37f41c7f99471593">
-      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.156-prerelease\lib\net452\Raven.Client.Lightweight.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Raven.Client.Lightweight, Version=3.5.10.0, Culture=neutral, PublicKeyToken=37f41c7f99471593, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.184-prerelease\lib\net452\Raven.Client.Lightweight.dll</HintPath>
     </Reference>
     <Reference Include="Robots, Version=1.0.8.0, Culture=neutral, PublicKeyToken=e33b67d3bb5581e4, processorArchitecture=MSIL">
-      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.9-prerelease\lib\net452\Robots.dll</HintPath>
+      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.13\lib\net452\Robots.dll</HintPath>
     </Reference>
-    <Reference Include="ShoQuan, Version=10.3.2.0, Culture=neutral, PublicKeyToken=1b3b2e95d16e0add">
-      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.156-prerelease\lib\net452\ShoQuan.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="ShoQuan, Version=10.3.2.0, Culture=neutral, PublicKeyToken=1b3b2e95d16e0add, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_DSS_RTAPI.10.3.184-prerelease\lib\net452\ShoQuan.dll</HintPath>
     </Reference>
     <Reference Include="Spatial4n.Core, Version=0.3.0.0, Culture=neutral, PublicKeyToken=9f9456e1ca16d45e, processorArchitecture=MSIL">
       <HintPath>packages\Spatial4n.Core.0.3\lib\net40\Spatial4n.Core.dll</HintPath>
@@ -295,7 +279,11 @@
     <Reference Include="Svg, Version=2.2.1.39233, Culture=neutral, PublicKeyToken=12a0bac221edeae2, processorArchitecture=MSIL">
       <HintPath>packages\Svg.2.3.0\lib\net35\Svg.dll</HintPath>
     </Reference>
+    <Reference Include="Swashbuckle.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cd1bb07a5ac7c7bc, processorArchitecture=MSIL">
+      <HintPath>packages\Swashbuckle.Core.5.6.0\lib\net40\Swashbuckle.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data.Linq" />
     <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Diagnostics.DiagnosticSource.4.5.0\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
     </Reference>
@@ -310,8 +298,8 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.WebApi.Client.5.2.7\lib\net45\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
     <Reference Include="System.Reactive.Core, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Rx-Core.2.2.5\lib\net45\System.Reactive.Core.dll</HintPath>
@@ -354,6 +342,12 @@
     <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.Helpers.dll</HintPath>
     </Reference>
+    <Reference Include="System.Web.Http, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.WebApi.Core.5.2.7\lib\net45\System.Web.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http.WebHost, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.WebApi.WebHost.5.2.7\lib\net45\System.Web.Http.WebHost.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.Mvc, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
     </Reference>
@@ -388,20 +382,20 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.EnterpriseServices" />
-    <Reference Include="UglyToad.PdfPig, Version=0.1.1.0, Culture=neutral, PublicKeyToken=605d367334e74123, processorArchitecture=MSIL">
-      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.9-prerelease\lib\net452\UglyToad.PdfPig.dll</HintPath>
+    <Reference Include="UglyToad.PdfPig, Version=0.1.4.0, Culture=neutral, PublicKeyToken=605d367334e74123, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.13\lib\net452\UglyToad.PdfPig.dll</HintPath>
     </Reference>
-    <Reference Include="UglyToad.PdfPig.Core, Version=0.1.1.0, Culture=neutral, PublicKeyToken=605d367334e74123, processorArchitecture=MSIL">
-      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.9-prerelease\lib\net452\UglyToad.PdfPig.Core.dll</HintPath>
+    <Reference Include="UglyToad.PdfPig.Core, Version=0.1.4.0, Culture=neutral, PublicKeyToken=605d367334e74123, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.13\lib\net452\UglyToad.PdfPig.Core.dll</HintPath>
     </Reference>
-    <Reference Include="UglyToad.PdfPig.Fonts, Version=0.1.1.0, Culture=neutral, PublicKeyToken=605d367334e74123, processorArchitecture=MSIL">
-      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.9-prerelease\lib\net452\UglyToad.PdfPig.Fonts.dll</HintPath>
+    <Reference Include="UglyToad.PdfPig.Fonts, Version=0.1.4.0, Culture=neutral, PublicKeyToken=605d367334e74123, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.13\lib\net452\UglyToad.PdfPig.Fonts.dll</HintPath>
     </Reference>
-    <Reference Include="UglyToad.PdfPig.Tokenization, Version=0.1.1.0, Culture=neutral, PublicKeyToken=605d367334e74123, processorArchitecture=MSIL">
-      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.9-prerelease\lib\net452\UglyToad.PdfPig.Tokenization.dll</HintPath>
+    <Reference Include="UglyToad.PdfPig.Tokenization, Version=0.1.4.0, Culture=neutral, PublicKeyToken=605d367334e74123, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.13\lib\net452\UglyToad.PdfPig.Tokenization.dll</HintPath>
     </Reference>
-    <Reference Include="UglyToad.PdfPig.Tokens, Version=0.1.1.0, Culture=neutral, PublicKeyToken=605d367334e74123, processorArchitecture=MSIL">
-      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.9-prerelease\lib\net452\UglyToad.PdfPig.Tokens.dll</HintPath>
+    <Reference Include="UglyToad.PdfPig.Tokens, Version=0.1.4.0, Culture=neutral, PublicKeyToken=605d367334e74123, processorArchitecture=MSIL">
+      <HintPath>packages\Ingeniux_InSite_Search_2.2.14.13\lib\net452\UglyToad.PdfPig.Tokens.dll</HintPath>
     </Reference>
     <Reference Include="WebActivatorEx, Version=2.0.0.0, Culture=neutral, PublicKeyToken=7b26dc2a43f6a0d4, processorArchitecture=MSIL">
       <HintPath>packages\WebActivatorEx.2.2.0\lib\net40\WebActivatorEx.dll</HintPath>
@@ -433,6 +427,7 @@
     <Content Include="bootstrap3\js\bootstrap.js" />
     <Content Include="bootstrap3\js\bootstrap.min.js" />
     <Content Include="Config\ApiFields.xml" />
+    <Content Include="Config\Synonyms.xml" />
     <Content Include="Content\bg-body.png" />
     <Content Include="Content\getPlainXmlPreview.xsl" />
     <Content Include="Content\getXmlPreview.xsl" />
@@ -458,11 +453,13 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="App_Start\SwaggerConfig.cs" />
+    <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\AssetAsyncController.cs" />
     <Compile Include="Controllers\DWAPIControllers\CategoriesController.cs" />
     <Compile Include="Controllers\DWAPIControllers\ContentController.cs" />
     <Compile Include="Controllers\DWAPIControllers\ContentSearchController.cs" />
-    <Compile Include="Controllers\DWAPIControllers\DWController.cs" />
+    <Compile Include="Controllers\DWAPIControllers\SearchApiController.cs" />
     <Compile Include="Controllers\PreviewAssetController.cs" />
     <Compile Include="Controllers\AssetController.cs" />
     <Compile Include="Controllers\AuthenticationController.cs" />

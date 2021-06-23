@@ -131,11 +131,11 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 		}
 
 		public static ContentSearchResult ConvertContentSearchResults(IEnumerable<SearchResultItem> searchResults, int totalCount,
-			HttpRequestBase request, IEnumerable<KeyValuePair<string, string>> refinements, IEnumerable<KeyValuePair<string, int>> categoryStats, int startIndex = 0)
+			IEnumerable<KeyValuePair<string, string>> refinements, IEnumerable<KeyValuePair<string, int>> categoryStats, int startIndex = 0)
 		{
 			ContentSearchResult results = new ContentSearchResult();
-			results.Data = _ConvertSearchResults(searchResults, request, refinements);
-			results.Query = request.Url.Query;
+			results.Data = _ConvertSearchResults(searchResults, refinements);
+			//results.Query = request.Url.Query;
 			results.Total = totalCount;
 			results.Count = searchResults.Count();
 			results.StartIndex = startIndex;
@@ -145,24 +145,24 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 			return results;
 		}
 
-		public static SearchContentResult ConvertContentResults(IEnumerable<SearchResultItem> searchResults, int totalCount, HttpRequestBase request)
+		public static SearchContentResult ConvertContentResults(IEnumerable<SearchResultItem> searchResults, int totalCount)
 		{
 			SearchContentResult results = new SearchContentResult();
-			results.Data = _ConvertSearchResults(searchResults, request);
+			results.Data = _ConvertSearchResults(searchResults);
 			results.Total = totalCount;
 			results.Count = searchResults.Count();
 
 			return results;
 		}
 
-		private static IEnumerable<Content> _ConvertSearchResults(IEnumerable<SearchResultItem> searchResults, HttpRequestBase request, IEnumerable<KeyValuePair<string, string>> refinements = null)
+		private static IEnumerable<Content> _ConvertSearchResults(IEnumerable<SearchResultItem> searchResults, IEnumerable<KeyValuePair<string, string>> refinements = null)
 		{
 			return searchResults.Select(r =>
 			{
 				switch (r.Type)
 				{
 					case "article":
-						return ConvertArticleSearchResultToContent(r, request);
+						return ConvertArticleSearchResultToContent(r);
                     default:
 						return new Content()
 						{
@@ -174,7 +174,7 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 			});
 		}
 
-		public static Dictionary<string, string> ARTICLE_SEARCH_MAPS = new Dictionary<string, string>()
+		public static Dictionary<string, string> PROPERTY_MAPS = new Dictionary<string, string>()
 		{
 			{"id","xID"},
 			{"title","Title"},
@@ -190,7 +190,7 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 		{
 			HashSet<string> fieldNames = new HashSet<string>();
 			string value;
-			if(ARTICLE_SEARCH_MAPS.TryGetValue(propertyName,out value))
+			if(PROPERTY_MAPS.TryGetValue(propertyName,out value))
 			{
 				fieldNames.Add(value);
 			}
@@ -205,7 +205,7 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 			src.GetType().GetProperty(propName).SetValue(src, value);
 		}
 
-		public static Content ConvertMappedResultToContent(SearchResultItem searchResult, HttpRequestBase request, Dictionary<string,string> map)
+		public static Content ConvertMappedResultToContent(SearchResultItem searchResult, Dictionary<string,string> map)
 		{
 			var contentObject = new JObject();
 
@@ -220,15 +220,15 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 			return content;
 		}
 
-        public static Content ConvertArticleSearchResultToContent(SearchResultItem articleResult, HttpRequestBase request)
+        public static Content ConvertArticleSearchResultToContent(SearchResultItem articleResult)
 		{
-			var content = ConvertMappedResultToContent(articleResult, request, ARTICLE_SEARCH_MAPS);
+			var content = ConvertMappedResultToContent(articleResult, PROPERTY_MAPS);
 
 			content.Type = articleResult.Type;
 			content.Name = articleResult.Name;
 ;
-			var c_pageurl = _GetFullUrl(request, articleResult.URL);
-			content.CustomAttributes.Add("pageurl", c_pageurl);
+			//var c_pageurl = _GetFullUrl(request, articleResult.URL);
+			//content.CustomAttributes.Add("pageurl", c_pageurl);
 
 			Dictionary<string, ContentSearchRefinement> refinementsById = new Dictionary<string, ContentSearchRefinement>();
 
