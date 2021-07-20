@@ -36,6 +36,8 @@ namespace Ingeniux.Runtime.Models.SearchSource
 
 			var doc = e.Document;
 			_AddHierarchyToDocument(doc);
+			_AddParentPathToDocument(doc);
+
 		}
 
 		private void _AddHierarchyToDocument(Document doc)
@@ -50,12 +52,49 @@ namespace Ingeniux.Runtime.Models.SearchSource
 
 			if (PageHierarchyById.TryGetValue(pageId, out string hierarchyValue))
 			{
-				doc.Add(new Field(HIERARCHY_VALUE_NAME,hierarchyValue,Field.Store.YES,Field.Index.ANALYZED));
+				doc.Add(new Field(HIERARCHY_VALUE_NAME,hierarchyValue,Field.Store.YES,Field.Index.NOT_ANALYZED));
 			}
 			else
 			{
 				Logger.Info($"could not find HIERARCHY for {pageId}");
 			}
+		}
+
+		private void _AddParentPathToDocument(Document doc)
+		{
+			try
+			{
+				var ancestryValue = doc.Get("_ANCESTRY_");
+				if (string.IsNullOrWhiteSpace(ancestryValue))
+				{
+					Logger.Debug($"could not add parent");
+					return;
+				}
+
+				doc.RemoveField(PARENT_PATH);
+				doc.RemoveField(PARENT_ID);
+
+				var ancestryPaths = ancestryValue.Split('|');
+				string parentAncestry;
+				string parentId;
+				if (ancestryPaths.Length < 2)
+				{
+					parentAncestry = string.Empty;
+					parentId = string.Empty;
+				}
+				else
+				{
+					parentAncestry = ancestryPaths.Slice(0, ancestryPaths.Length - 1).Aggregate((c, n) => $"{c}|{n}");
+					parentId = ancestryPaths[ancestryPaths.Length - 2];
+				}
+
+				doc.Add(new Field(PARENT_PATH, parentAncestry, Field.Store.YES, Field.Index.NOT_ANALYZED));
+				doc.Add(new Field(PARENT_ID, parentId, Field.Store.YES, Field.Index.NOT_ANALYZED));
+			}catch(Exception e)
+            {
+				Logger.Error($"Error calculating parent");
+			}
+
 		}
 
 		protected override void parseXmlNodeForFields(XElement element, SearchItem doc, Dictionary<string, string> urls, SearchType typeEntry, string ancestorPrefix, int listItemIndex, HashSet<string> ancestorCompIds, CmsIndexingLogs indexLogs, AssetMap assetMap)
@@ -78,6 +117,8 @@ namespace Ingeniux.Runtime.Models.SearchSource
 		private const string CATEGORY_ID_PREFIX = "CategoryNodes/";
 		private const string HIERARCHY_VALUE_NAME = "HierarchyValue";
 		private const string PARENT_VALUE_NAME = "ParentName";
+		private const string PARENT_PATH = "ParentPath";
+		private const string PARENT_ID = "ParentId";
 		private const string CONTENT_VALUE_NAME = "Content";
 		private const string PREP_INSTRUCTIONS_VALUE_NAME = "PreparationInstructions";
 		private const string ESCAPED_CONTENT_VALUE_NAME = "EscapedContent";

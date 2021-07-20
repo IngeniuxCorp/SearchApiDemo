@@ -1,20 +1,14 @@
-﻿using Ingeniux.Runtime.Models;
+﻿using Ingeniux.Runtime.Models.APIModels;
 using Ingeniux.Runtime.Models.APIModels.Helpers;
-using Ingeniux.Search;
-using Lucene.Net.Search;
-using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Web;
-using System.Web.Mvc;
+using System.Web.Http;
 using System.Web.Routing;
 using static Ingeniux.Runtime.Models.APIModels.Helpers.ContentSearchConvert;
 
 namespace Ingeniux.Runtime.Controllers
 {
+	[AccessControlAllowOrigin("*")]
 	[RoutePrefix("api/search")]
 	public class SearchController: SearchApiController
     {
@@ -22,9 +16,9 @@ namespace Ingeniux.Runtime.Controllers
 
 		[HttpGet]
 		[Route("")]
-		public ContentSearchResult ContentSearch(string query, string sort ="", int start = 0, int count = 10)
+		public ContentSearchResult ContentSearch(string query = "", [FromUri] List<string> filters=null, string sort ="", int start = 1, int count = 10)
 		{
-			ContentSearchResult results = ContentSearchHelper.GetSearchResults(new KeyValuePair<string,string>[0], sort, start, count, query).Result;
+			ContentSearchResult results = ContentSearchHelper.GetSearchResults(filters?.Select(s => new QueryFilter(s)), sort, start, count, query).Result;
 			return results;
 		}
 	}

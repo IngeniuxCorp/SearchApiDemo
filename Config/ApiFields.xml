@@ -1,5 +1,6 @@
 <apiFields>
     <field>Title</field>
     <field>Content</field>
-    <field>Name</field>
+	<field>Name</field>
+	<field>Detail</field>
 </apiFields>

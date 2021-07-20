@@ -17,9 +17,10 @@ namespace Ingeniux.Runtime
         {
             foreach (ApiDescription apiDescription in apiExplorer.ApiDescriptions)
             {
+                //System.Diagnostics.Debugger.Launch();
+                var content = swaggerDoc.definitions["Content"];
 
-                if (!apiDescription.RelativePath.StartsWith("api/")
-                    )
+                if (apiDescription.RelativePath.Contains("api/AutomatedTaskWebAPI"))
                 {
                     swaggerDoc.paths.Remove("/" + apiDescription.RelativePath.TrimEnd('/'));
                 }

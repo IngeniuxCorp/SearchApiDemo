@@ -34,87 +34,22 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 		private const string SEARCH_XID_FILED_NAME = "xID";
 		private const string SEARCH_OLD_ID_FILED_NAME = "ID";
 
-		private static IEnumerable<SearchResultItem> _GetSkipTakeSearchResults(int skip, int take, Ingeniux.Search.Search search,
-			SiteSearch siteSearch, SearchInstruction instructions, out int count, out IEnumerable<KeyValuePair<string, int>> categoryStats)
-		{
-			int c;
-			int page = 1;
-			int size = 10;
-			int xOffset = 0;
-			int yOffset = 0;
-			int baseCount = take;
-			int baseSkip = skip;
-
-			if (skip < take)
-			{
-				take = take + skip;
-				xOffset = -(skip);
-				skip = 0;
-
-			}
-			else if (skip % take != 0)
-			{
-				yOffset = 1;
-				//x should be negative
-				xOffset = ((take + yOffset) - skip) % (take + yOffset);
-				skip = skip + xOffset;
-				take = take + yOffset - xOffset;
-			}
-
-			decimal pageNum = (((decimal)skip + take) / take);
-			page = Convert.ToInt32(Math.Ceiling(pageNum));;
-			size = take;
-
-			var searchResults = search.QueryFinal(siteSearch, out c, instructions, page: page, size: size);
-			
-			var categoryStatsProviders = new Ingeniux.Search.StatsProviders.CategoryStatsProviders(siteSearch);
-			categoryStats = categoryStatsProviders.GetStats(searchResults).Where(p => p.Value > 0);
-
-			count = searchResults.TotalCount;
-
-			var skipCount = ((page - 1) * size) - baseSkip;
-
-			IEnumerable<SearchResultItem> offsetResults = searchResults.Skip(-(skipCount)).Take(baseCount);
-			return offsetResults;
-		}
-
-		private static IEnumerable<KeyValuePair<string, string>> _GetSelectedRefinements(IEnumerable<string> refinementRequests)
-		{
-			List<KeyValuePair<string, string>> refinements = new List<KeyValuePair<string, string>>();
-
-			foreach (var refinement in refinementRequests)
-			{
-				var key = refinement.SubstringBefore("=");
-				var value = refinement.SubstringAfter("=");
-
-				//clean out lucene control chars
-				value = _SearchCleaner.Replace(value, " ");
-
-				if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(value))
-				{
-					refinements.Add(new KeyValuePair<string, string>(key, value));
-				}
-			}
-
-			return refinements;
-		}
-
-		private readonly static Regex _REFINEMENT_PATTERN = new Regex(@"^Refine_\d$", RegexOptions.IgnoreCase);
-		private const char _QUERY_LIST_SEPARATOR = '|';
-
-		//refinements that need to be handled differntly
 		private static readonly HashSet<string> _SkippedRefinements = new HashSet<string>()
 		{
 			"type",
 			"xid",
-			"CategoryNodes"
+			"categorynodes"
 		};
 
-		public static async Task<ContentSearchResult> GetSearchResults(IEnumerable<KeyValuePair<string,string>> refinements = null, string sort = "", int page = 0, int size = 10, string query = "")
+		public static async Task<ContentSearchResult> GetSearchResults(IEnumerable<QueryFilter> refinements = null, string sort = "", int page = 1, int size = 10, string query = "")
 		{
-			System.Diagnostics.Debugger.Launch();
 			int c;
 			IEnumerable<KeyValuePair<string, int>> categoryStats;
+
+			if(refinements == null)
+            {
+				refinements = new QueryFilter[0];
+			}
 
 			Ingeniux.Search.Search search = new Ingeniux.Search.Search();
 			var siteSearch = CMSPageDefaultController.GetSiteSearch();
@@ -124,130 +59,75 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 			{
 				instructions.AddQuery(new TermQuery(new Term("_SOURCENAME_", apiSourceName)), Occur.MUST);
 			}
-			
 
-			//var refinementsKeys = request.QueryString.AllKeys.Where(k => _REFINEMENT_PATTERN.IsMatch(k));
+            string[] termsA = query?.Split(new[] { ',' },StringSplitOptions.RemoveEmptyEntries)
+				.Select(t => $"*{t}*").ToArray() ?? new string[0];
 
-			//var refinementRequests = refinementsKeys
-			//	.Select(k => request[k])
-			//	.Where(v => !string.IsNullOrWhiteSpace(v));
+			BooleanQuery termQuery = new BooleanQuery();
 
-
-			//var refinements = _GetSelectedRefinements(refinementRequests);
-
-			Task queryTask = !string.IsNullOrWhiteSpace(query) ? Task.Factory.StartNew(() =>
+			if (termsA.Any())
 			{
-				string[] termsA = query?.Split(',')
-					.Select(t => $"*{t}*").ToArray() ?? new string[0];
-
-				IEnumerable<string> fieldNames = _GetTerms(siteSearch);
-
-				BooleanQuery termQuery = new BooleanQuery();
-
-				foreach (var fieldName in fieldNames)
+				termQuery.Add(instructions.GetFullTextTermQuery(
+					Occur.MUST,
+					true,
+					termsA
+				));
+				if (termQuery.Any())
 				{
-					termQuery.Add(instructions.GetFieldTermQuery(
-						Occur.SHOULD,
-						fieldName,
-						true,
-						termsA
-					));
-				}
-
-				instructions.AddQuery(termQuery, Occur.MUST);
-			}) : null;
-			
-
-
-
-			if (refinements.Any(r => r.Key.StartsWith("CategoryNodes/", StringComparison.InvariantCultureIgnoreCase)
-			|| r.Key.Equals("CategoryNodes", StringComparison.InvariantCultureIgnoreCase)))
-			{
-				//get everything with a category node
-				//they are all OR's
-				//if they want ANDS they should use two refinements
-				//multi queries are a  pipe separator
-				var categoryRefinements = refinements
-					.Where(r => r.Key.StartsWith("CategoryNodes/", StringComparison.InvariantCultureIgnoreCase)
-					|| r.Key.Equals("CategoryNodes", StringComparison.InvariantCultureIgnoreCase) || r.Key.Equals("cmscategories", StringComparison.InvariantCultureIgnoreCase));
-
-				foreach (var categoryRefinement in categoryRefinements)
-				{
-					var c_categories = categoryRefinement.Value.Split(_QUERY_LIST_SEPARATOR);
-
-					var catTerms = c_categories.SelectMany(r => ContentSearchConvert.GetChildAndSelfCategoryIds(r)).ToArray();
-
-					var catQuery = new BooleanQuery();
-
-					foreach (var catId in catTerms)
-					{
-						var catIdClause = instructions.GetFieldTermQuery(Occur.SHOULD, "_CATS_ID", false, catId);
-						catQuery.Add(catIdClause);
-					}
-
-					instructions.AddQuery(catQuery, Occur.MUST);
+					instructions.AddQuery(termQuery, Occur.MUST);
 				}
 			}
 
-			if (refinements.Any(r => r.Key.Equals("xid", StringComparison.InvariantCultureIgnoreCase)))
+
+			var categoryRefinements = refinements?.Where(r => r.Name.Equals("categorynodes", StringComparison.InvariantCultureIgnoreCase)) ?? new QueryFilter[0];
+
+			foreach (var categoryRefinement in categoryRefinements)
 			{
-				string fdid = refinements.FirstOrDefault(r => r.Key.Equals("xid", StringComparison.InvariantCultureIgnoreCase)).Value;
-				if (!string.IsNullOrWhiteSpace(fdid))
+
+				var categories = categoryRefinement.Values.Where(v => !string.IsNullOrWhiteSpace(v));
+                if (!categories.Any())
+                {
+					continue;
+                }
+
+				var catTerms = categories.SelectMany(r => ContentSearchConvert.GetChildAndSelfCategoryIds(r)).ToArray();
+				var catQuery = new BooleanQuery();
+
+				foreach (var catId in catTerms)
 				{
-					var sitePath = ConfigurationManager.AppSettings["PageFilesLocation"];
-					var cmsRefernce = Reference.Reference.Get(sitePath);
+                    if (string.IsNullOrWhiteSpace(catId))
+                    {
 
-					var childIds = cmsRefernce.GetChildren(fdid).Select(r => r.ID).ToArray();
-
-					var childQuery = new BooleanQuery();
-
-					foreach (var childId in childIds)
-					{
-						var childIdClause = instructions.GetFieldTermQuery(Occur.SHOULD, "xID", false, childId);
-						childQuery.Add(childIdClause);
-					}
-
-					instructions.AddQuery(childQuery, Occur.MUST);
+                    }
+					var catIdClause = instructions.GetFieldTermQuery(Occur.SHOULD, "_CATS_ID", false, catId);
+					catQuery.Add(catIdClause);
 				}
+
+				instructions.AddQuery(catQuery, Occur.MUST);
 			}
+			
 
 			foreach (var refinement in refinements)
 			{
-				if (_SkippedRefinements.Contains(refinement.Key))
+				if (_SkippedRefinements.Contains(refinement.Name))
 				{
 					continue;
 				}
-				var mappedFields = ContentSearchConvert.FieldsMapedToProperty(refinement.Key);
-				if (mappedFields.Any())
+
+				var fieldRefinementQuery = new BooleanQuery();
+				foreach (var refinementValue in refinement.Values)
 				{
-					var mappedFieldQuery = new BooleanQuery();
-					foreach (var fieldName in mappedFields)
-					{
-						var fieldValues = refinement.Value.Split(_QUERY_LIST_SEPARATOR);
-						var fieldRefinementQuery = new BooleanQuery();
-
-						foreach (var fieldValue in fieldValues)
-						{
-                            if (refinement.Key.Equals("c_cats", StringComparison.InvariantCultureIgnoreCase)) {
-                                var categoryFieldClause = instructions.GetCategoryQuery(Occur.MUST, Occur.SHOULD, fieldValue);
-                                fieldRefinementQuery.Add(categoryFieldClause);
-                            }
-                            else {
-                                var fieldClause = instructions.GetFieldTermQuery(Occur.SHOULD, fieldName, false, fieldValue);
-                                fieldRefinementQuery.Add(fieldClause);
-                            }
-						}
-
-						instructions.AddQuery(fieldRefinementQuery, Occur.MUST);
-					}
+					var refinementQuery = new TermQuery(new Term(refinement.Name, refinementValue));
+                    fieldRefinementQuery.Add(refinementQuery, Occur.SHOULD);
 				}
+				instructions.AddQuery(fieldRefinementQuery, Occur.MUST);
 			}
 
-			if (refinements.Any(r => r.Key.Equals("type", StringComparison.InvariantCultureIgnoreCase)))
+			if (refinements.Any(r => r.Name.Equals("type", StringComparison.InvariantCultureIgnoreCase)))
 			{
 				var pageTypes = refinements
-					.Where(r => r.Key.Equals("type", StringComparison.InvariantCultureIgnoreCase))
-					.Select(r => r.Value.Split(_QUERY_LIST_SEPARATOR));
+					.Where(r => r.Name.Equals("type", StringComparison.InvariantCultureIgnoreCase))
+					.SelectMany(r => r.Values);
 
 				var pageTypeQuery = new BooleanQuery();
 
@@ -281,112 +161,25 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 				}
 				else
 				{
-					var fieldNames = ContentSearchConvert.FieldsMapedToProperty(sortByFieldName);
-					var fieldName = fieldNames.FirstOrDefault();
-					if (string.IsNullOrWhiteSpace(fieldName))
-					{
-						//just pass it through, lets you query by cms fields if you want
-						//its a feature
-						fieldName = sortByFieldName;
-					}
-					instructions.AddSort(new Lucene.Net.Search.SortField(fieldName, CultureInfo.InvariantCulture, sortReverse));
+					instructions.AddSort(new Lucene.Net.Search.SortField(sortByFieldName, CultureInfo.InvariantCulture, sortReverse));
 				}
 			}
 
-			if(queryTask != null)
-            {
-				await queryTask;
-			}
-			
-			//var searchResults = _GetSkipTakeSearchResults(start, count, search, siteSearch, instructions, out c, out categoryStats);
-
-
 			var searchResults = search.QueryFinal(siteSearch, out c, instructions, page: page, size: size);
 
-			var categoryStatsProviders = new Ingeniux.Search.StatsProviders.CategoryStatsProviders(siteSearch);
+			var categoryStatsProviders = new CategoryStatsProviders(siteSearch);
 			categoryStats = categoryStatsProviders.GetStats(searchResults).Where(p => p.Value > 0);
 
 
-			ContentSearchResult results = ContentSearchConvert.ConvertContentSearchResults(searchResults, c, refinements, categoryStats, page);
+			ContentSearchResult results = ConvertContentSearchResults(searchResults, c, refinements, categoryStats, page);
 
 			return results;
 		}
 
-		public static string[] GetLocationValues(IEnumerable<KeyValuePair<string, string>> refinements)
-		{
-			string locationValues = refinements.FirstOrDefault(r => r.Key.Equals("location", StringComparison.InvariantCultureIgnoreCase)).Value;
-			if (string.IsNullOrWhiteSpace(locationValues))
-			{
-				return new string[0];
-			}
-			string[] args = locationValues.Split(',');
-			return args;
-		}
 
 		private static object _ApiCacheLock = new object();
 		private const string API_FILE_CACHE_NAME = "_API_FILE_CACHE_NAME_";
 
-		private static XElement _ApiTermsXML
-		{
-			get
-			{
-				ObjectCache cache = MemoryCache.Default;
-				XElement apiConfigFile = cache[API_FILE_CACHE_NAME] as XElement;
-				if (apiConfigFile == null)
-				{
-					lock (_ApiCacheLock)
-					{
-						apiConfigFile = cache[API_FILE_CACHE_NAME] as XElement;
-						if (apiConfigFile == null)
-						{
-							var apiConfigPath = _GetApiPath();
-							if (apiConfigFile == null && System.IO.File.Exists(apiConfigPath))
-							{
-								apiConfigFile = Xtensions.SafeLoad(apiConfigPath);
-								CacheItemPolicy policy = new CacheItemPolicy();
-								policy.ChangeMonitors.Add(new
-								HostFileChangeMonitor(new[] { apiConfigPath }));
-								cache.Set(API_FILE_CACHE_NAME, apiConfigFile, policy);
-							}
-						}
-					}
-				}
-				return apiConfigFile;
-			}
-		}
-
-		private static string _GetApiPath()
-		{
-			Uri codeBaseUri = new Uri(Assembly.GetExecutingAssembly().CodeBase);
-			FileInfo fi = new FileInfo(codeBaseUri.LocalPath);
-			Uri root = new Uri(fi.Directory.FullName);
-			var apiFieldFilePath = HttpUtility.UrlDecode(new Uri(root, @"Config\ApiFields.xml").AbsolutePath);
-			return apiFieldFilePath;
-		}
-
-		private static IEnumerable<string> _GetTerms(SiteSearch siteSearch)
-		{
-			var publicResults = siteSearch.Indexer.GetPubliclySearchableResults(false, true);
-
-			var fields = publicResults.PubliclySearchableFieldNames;
-
-			var fieldNames = _ApiTermsXML.Descendants("field").Select(e => e.Value);
-
-			var results = fields.Where(f =>
-			{
-				foreach(var qf in fieldNames)
-				{
-					if (f.Equals(qf,StringComparison.InvariantCultureIgnoreCase) || f.EndsWith($"__{qf}"))
-					{
-						return true;
-					}
-				}
-				return false;
-			});
-
-			return results;
-
-		}
 
 		public static SearchContentResult GetPagesById(IEnumerable<string> pageIds)
 		{
@@ -414,45 +207,10 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 
 			instructions.AddQuery(pageIdQuery, Occur.MUST);
 			
-			//MAX size of DW was 25, keeping this limit
 			var searchResults = search.QueryFinal(siteSearch, out c, instructions, page: 1, size: 25);
-
-
-
 			SearchContentResult result = ContentSearchConvert.ConvertContentResults(searchResults, searchResults.Count());
 
 			return result;
 		}
-
-
-		public static BooleanQuery GetLocationQuery(Query query, double latitude, double longitude,  double searchRadiusMi, int maxHits = 10)
-		{
-			var spatialContext = SpatialContext.GEO;
-
-			var maxLevels = 11;
-			SpatialPrefixTree grid = new GeohashPrefixTree(spatialContext, maxLevels);
-			var _strategy = new RecursivePrefixTreeStrategy(grid, "location");
-			var distance = DistanceUtils.Dist2Degrees(searchRadiusMi, DistanceUtils.EARTH_MEAN_RADIUS_MI);
-            //lay is Y value in ESRI
-            var searchArea = spatialContext.MakeCircle(longitude, latitude, distance);
-
-			var spatialArgs = new SpatialArgs(SpatialOperation.Intersects, searchArea);
-			var spatialQuery = _strategy.MakeQuery(spatialArgs);
-			var valueSource = _strategy.MakeRecipDistanceValueSource(searchArea);
-			var valueSourceFilter = new ValueSourceFilter(new QueryWrapperFilter(spatialQuery), valueSource, 0, 1);
-
-			var filteredSpatial = new FilteredQuery(query, valueSourceFilter);
-			var spatialRankingQuery = new FunctionQuery(valueSource);
-
-			var locationQuery = new BooleanQuery();
-			locationQuery.Add(filteredSpatial, Occur.MUST);
-			locationQuery.Add(spatialRankingQuery, Occur.MUST);
-
-			return locationQuery;
-		}
-
-
 	}
-
-
 }

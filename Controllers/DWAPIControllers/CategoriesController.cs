@@ -1,10 +1,12 @@
 ﻿using System.Web.Routing;
 using static Ingeniux.Runtime.Models.APIModels.Helpers.ContentSearchConvert;
 using System.Web.Http;
+using Ingeniux.Runtime.Models.APIModels.Helpers;
 
 namespace Ingeniux.Runtime.Controllers
 {
-    [RoutePrefix("api/categories")]
+	[AccessControlAllowOrigin("*")]
+	[RoutePrefix("api/category")]
 	public class CategoriesController : SearchApiController
     {
         [HttpGet]

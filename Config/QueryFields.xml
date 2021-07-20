@@ -1,0 +1,6 @@
+﻿<QueryFields enabled="true">
+	<Field>Title</Field>
+	<Field>Content</Field>
+	<Field>Name</Field>
+	<Field>Detail</Field>
+</QueryFields>
