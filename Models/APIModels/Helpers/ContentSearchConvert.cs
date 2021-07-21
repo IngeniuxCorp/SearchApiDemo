@@ -130,16 +130,15 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
         }
 
         public static ContentSearchResult ConvertContentSearchResults(IEnumerable<SearchResultItem> searchResults, int totalCount,
-            IEnumerable<QueryFilter> refinements, IEnumerable<KeyValuePair<string, int>> categoryStats, int startIndex = 1)
+            IEnumerable<IEnumerable<QueryFilter>> filters, IEnumerable<KeyValuePair<string, int>> categoryStats, int startIndex = 1)
         {
             ContentSearchResult results = new ContentSearchResult();
-            results.Results = _ConvertSearchResults(searchResults, refinements);
-            //results.Query = request.Url.Query;
+            results.Results = _ConvertSearchResults(searchResults);
             results.Total = totalCount;
             results.Count = searchResults.Count();
             results.StartIndex = startIndex;
-            results.SelectedRefinements = refinements.DistinctBy(p => p.Name);
-            results.Refinements = ConvertContentSearchRefinements(categoryStats);
+            results.SelectedFilters = filters;
+            results.Filters = ConvertContentSearchRefinements(categoryStats);
 
             return results;
         }
@@ -154,7 +153,7 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
             return results;
         }
 
-        private static IEnumerable<Content> _ConvertSearchResults(IEnumerable<SearchResultItem> searchResults, IEnumerable<QueryFilter> refinements = null)
+        private static IEnumerable<Content> _ConvertSearchResults(IEnumerable<SearchResultItem> searchResults)
         {
             return searchResults.Select(r => new Content(r));
         }
@@ -351,7 +350,7 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 
             }
 
-            [JsonProperty(PropertyName = "hit_count")]
+            [JsonProperty(PropertyName = "result_count")]
             public int Count { get; set; }
             [JsonProperty(PropertyName = "description")]
             public string Description { get; set; }
@@ -395,10 +394,10 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
             public override IEnumerable<Content> Results { get; set; }
             [JsonProperty(PropertyName = "query")]
             public string Query { get; set; }
-            [JsonProperty(PropertyName = "refinements")]
-            public IEnumerable<ContentSearchRefinement> Refinements { get; set; }
-            [JsonProperty(PropertyName = "selected_refinements")]
-            public IEnumerable<QueryFilter> SelectedRefinements { get; set; }
+            [JsonProperty(PropertyName = "filters")]
+            public IEnumerable<ContentSearchRefinement> Filters { get; set; }
+            [JsonProperty(PropertyName = "selected_filters")]
+            public IEnumerable<IEnumerable<QueryFilter>> SelectedFilters { get; set; }
         }
 
         public abstract class BasePagedResult<T> : BaseResult<T>

@@ -36,19 +36,17 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 
 		private static readonly HashSet<string> _SkippedRefinements = new HashSet<string>()
 		{
-			"type",
-			"xid",
 			"categorynodes"
 		};
 
-		public static async Task<ContentSearchResult> GetSearchResults(IEnumerable<QueryFilter> refinements = null, string sort = "", int page = 1, int size = 10, string query = "")
+		public static async Task<ContentSearchResult> GetSearchResults(IEnumerable<IEnumerable<QueryFilter>> filters = null, string sort = "", int page = 1, int size = 10, string query = "")
 		{
 			int c;
 			IEnumerable<KeyValuePair<string, int>> categoryStats;
 
-			if(refinements == null)
+			if(filters == null)
             {
-				refinements = new QueryFilter[0];
+				filters = new QueryFilter[0][];
 			}
 
 			Ingeniux.Search.Search search = new Ingeniux.Search.Search();
@@ -78,50 +76,21 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 				}
 			}
 
+			var filterQuery = new BooleanQuery();
 
-			var categoryRefinements = refinements?.Where(r => r.Name.Equals("categorynodes", StringComparison.InvariantCultureIgnoreCase)) ?? new QueryFilter[0];
-
-			foreach (var categoryRefinement in categoryRefinements)
-			{
-
-				var categories = categoryRefinement.Values.Where(v => !string.IsNullOrWhiteSpace(v));
-                if (!categories.Any())
+			foreach(var filterGroup in filters)
+            {
+				var filterGroupQuery = _ProcessFilters(filterGroup);
+                if (filterGroup.Any())
                 {
-					continue;
+					filterQuery.Add(filterGroupQuery, Occur.SHOULD);
                 }
-
-				var catTerms = categories.SelectMany(r => ContentSearchConvert.GetChildAndSelfCategoryIds(r)).ToArray();
-				var catQuery = new BooleanQuery();
-
-				foreach (var catId in catTerms)
-				{
-                    if (string.IsNullOrWhiteSpace(catId))
-                    {
-						continue;
-                    }
-					var catIdClause = instructions.GetFieldTermQuery(Occur.SHOULD, "_CATS_ID", false, catId);
-					catQuery.Add(catIdClause);
-				}
-
-				instructions.AddQuery(catQuery, Occur.MUST);
-			}
+            }
+            if (filterQuery.Any())
+            {
+				instructions.AddQuery(filterQuery, Occur.MUST);
+            }
 			
-
-			foreach (var refinement in refinements)
-			{
-				if (_SkippedRefinements.Contains(refinement.Name))
-				{
-					continue;
-				}
-
-				var fieldRefinementQuery = new BooleanQuery();
-				foreach (var refinementValue in refinement.Values)
-				{
-					var refinementQuery = new TermQuery(new Term(refinement.Name, refinementValue));
-                    fieldRefinementQuery.Add(refinementQuery, Occur.SHOULD);
-				}
-				instructions.AddQuery(fieldRefinementQuery, Occur.MUST);
-			}
 
 			if (!string.IsNullOrWhiteSpace(sort))
 			{
@@ -149,9 +118,57 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 			categoryStats = categoryStatsProviders.GetStats(searchResults).Where(p => p.Value > 0);
 
 
-			ContentSearchResult results = ConvertContentSearchResults(searchResults, c, refinements, categoryStats, page);
+			ContentSearchResult results = ConvertContentSearchResults(searchResults, c, filters, categoryStats, page);
 
 			return results;
+		}
+
+		private static BooleanQuery _ProcessFilters(IEnumerable<QueryFilter> filters)
+        {
+			var filterQuery = new BooleanQuery();
+			var categoryRefinements = filters?.Where(r => r.Name.Equals("categorynodes", StringComparison.InvariantCultureIgnoreCase)) ?? new QueryFilter[0];
+
+			foreach (var categoryRefinement in categoryRefinements)
+			{
+
+				if (string.IsNullOrWhiteSpace(categoryRefinement.Value))
+				{
+					continue;
+				}
+
+				var catTerms = ContentSearchConvert.GetChildAndSelfCategoryIds(categoryRefinement.Value).ToArray();
+				var catQuery = new BooleanQuery();
+
+				foreach (var catId in catTerms)
+				{
+					if (string.IsNullOrWhiteSpace(catId))
+					{
+						continue;
+					}
+					var catIdQuery = new TermQuery(new Term("_CATS_ID", catId));
+					catQuery.Add(catIdQuery, Occur.SHOULD);
+				}
+
+				filterQuery.Add(catQuery, Occur.MUST);
+			}
+
+
+			foreach (var filter in filters)
+			{
+				if (_SkippedRefinements.Contains(filter.Name) || string.IsNullOrWhiteSpace(filter.Value))
+				{
+					continue;
+				}
+
+				var fieldRefinementQuery = new BooleanQuery();
+
+				var refinementQuery = new TermQuery(new Term(filter.Name, filter.Value));
+				fieldRefinementQuery.Add(refinementQuery, Occur.SHOULD);
+
+				filterQuery.Add(fieldRefinementQuery, Occur.MUST);
+			}
+
+			return filterQuery;
 		}
 
 		public static SearchContentResult GetPagesById(IEnumerable<string> pageIds)
