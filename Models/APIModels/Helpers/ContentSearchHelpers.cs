@@ -97,7 +97,7 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 				{
                     if (string.IsNullOrWhiteSpace(catId))
                     {
-
+						continue;
                     }
 					var catIdClause = instructions.GetFieldTermQuery(Occur.SHOULD, "_CATS_ID", false, catId);
 					catQuery.Add(catIdClause);
@@ -123,28 +123,6 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 				instructions.AddQuery(fieldRefinementQuery, Occur.MUST);
 			}
 
-			if (refinements.Any(r => r.Name.Equals("type", StringComparison.InvariantCultureIgnoreCase)))
-			{
-				var pageTypes = refinements
-					.Where(r => r.Name.Equals("type", StringComparison.InvariantCultureIgnoreCase))
-					.SelectMany(r => r.Values);
-
-				var pageTypeQuery = new BooleanQuery();
-
-				//multiple of these will return nothing, but its how the logic should  be
-				foreach (var type in pageTypes)
-				{
-					if (type.Any())
-					{
-						var pageTypeClause = instructions.GetTypeQuery(Occur.SHOULD, type);
-						pageTypeQuery.Add(pageTypeClause);
-						instructions.AddQuery(pageTypeQuery, Occur.MUST);
-					}
-				}
-			}
-
-
-
 			if (!string.IsNullOrWhiteSpace(sort))
 			{
 				var orderByStr = sort.SubstringAfter("=");
@@ -156,12 +134,12 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 					|| sortByFieldName.Equals("cmshierarchy", StringComparison.InvariantCultureIgnoreCase))
 				{
 					sortReverse = orderByStr.ToLowerInvariant() == "dec" ? true : false;
-					var hierarchySort = new Lucene.Net.Search.SortField(HierarchyCompare.HIERARCHY_VALUE_NAME, new HierarchyCompareSource(), sortReverse);
+					var hierarchySort = new SortField(HierarchyCompare.HIERARCHY_VALUE_NAME, new HierarchyCompareSource(), sortReverse);
 					instructions.sorts.Add(hierarchySort);
 				}
 				else
 				{
-					instructions.AddSort(new Lucene.Net.Search.SortField(sortByFieldName, CultureInfo.InvariantCulture, sortReverse));
+					instructions.AddSort(new SortField(sortByFieldName, CultureInfo.InvariantCulture, sortReverse));
 				}
 			}
 
@@ -175,11 +153,6 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 
 			return results;
 		}
-
-
-		private static object _ApiCacheLock = new object();
-		private const string API_FILE_CACHE_NAME = "_API_FILE_CACHE_NAME_";
-
 
 		public static SearchContentResult GetPagesById(IEnumerable<string> pageIds)
 		{
