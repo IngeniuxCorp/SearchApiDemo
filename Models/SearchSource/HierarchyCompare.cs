@@ -17,7 +17,7 @@ namespace Ingeniux.Runtime.Models.SearchSource
 
 	public class HierarchyCompare : FieldComparator
 	{
-		public const string HIERARCHY_VALUE_NAME = "HierarchyValue";
+		public const string HIERARCHY_VALUE_NAME = "hierarchyValue";
 		private string[] values;
 		private string[] currentReaderValues;
 		private string field;

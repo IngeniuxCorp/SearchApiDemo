@@ -114,15 +114,11 @@ namespace Ingeniux.Runtime.Models.SearchSource
 		}
 		private const string HIERARCHY_BY_ID_CACHE_NAME = "HIERARCHY_BY_ID_CACHE";
 		private const string REFERNCE_FILE_NAME = "Reference.xml";
-		private const string CATEGORY_ID_PREFIX = "CategoryNodes/";
-		private const string HIERARCHY_VALUE_NAME = "HierarchyValue";
-		private const string PARENT_VALUE_NAME = "ParentName";
-		private const string PARENT_PATH = "ParentPath";
-		private const string PARENT_ID = "ParentId";
+		private const string HIERARCHY_VALUE_NAME = "hierarchyValue";
+		private const string PARENT_PATH = "parentPath";
+		private const string PARENT_ID = "parentId";
 		private const string CONTENT_VALUE_NAME = "Content";
-		private const string PREP_INSTRUCTIONS_VALUE_NAME = "PreparationInstructions";
 		private const string ESCAPED_CONTENT_VALUE_NAME = "EscapedContent";
-		private const string ESCAPED_PREP_INSTRUCTIONS_VALUE_NAME = "EscapedPreparationInstructions";
 		private static object _HierarchyCacheLock = new object();
 
 		private static IEnumerable<KeyValuePair<string,string>> _GetHierarchies(XElement xElement, string currentHierarchy = "1")
