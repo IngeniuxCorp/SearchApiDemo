@@ -67,6 +67,7 @@ namespace Ingeniux.Runtime
                     //
                     c.SingleApiVersion("v1", "Ingeniux.Runtime");
                     c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
+
                     // If you want the output Swagger docs to be indented properly, enable the "PrettyPrint" option.
                     //
                     //c.PrettyPrint();
@@ -95,10 +96,12 @@ namespace Ingeniux.Runtime
                     //    .Description("Basic HTTP Authentication");
                     //
                     // NOTE: You must also configure 'EnableApiKeySupport' below in the SwaggerUI section
-                    //c.ApiKey("apiKey")
-                    //    .Description("API Key Authentication")
-                    //    .Name("apiKey")
-                    //    .In("header");
+
+                    c.ApiKey("Token")
+                        .Description("Filling bearer token here")
+                        .Name("Authorization")
+                        .In("header");
+
                     //
                     //c.OAuth2("oauth2")
                     //    .Description("OAuth2 Implicit Grant")
@@ -282,7 +285,7 @@ namespace Ingeniux.Runtime
                     // If your API supports ApiKey, you can override the default values.
                     // "apiKeyIn" can either be "query" or "header"
                     //
-                    //c.EnableApiKeySupport("apiKey", "header");
+                    c.EnableApiKeySupport("Authorization", "header");
                 });
         }
     }
