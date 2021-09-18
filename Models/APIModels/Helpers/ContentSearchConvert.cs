@@ -130,10 +130,10 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
         }
 
         public static ContentSearchResult ConvertContentSearchResults(IEnumerable<SearchResultItem> searchResults, int totalCount,
-            IEnumerable<IEnumerable<QueryFilter>> filters, IEnumerable<KeyValuePair<string, int>> categoryStats, int startIndex = 1)
+            IEnumerable<IEnumerable<QueryFilter>> filters, IEnumerable<KeyValuePair<string, int>> categoryStats, string baseUri, int startIndex = 1)
         {
             ContentSearchResult results = new ContentSearchResult();
-            results.Results = _ConvertSearchResults(searchResults);
+            results.Results = _ConvertSearchResults(searchResults, baseUri);
             results.Total = totalCount;
             results.Count = searchResults.Count();
             results.StartIndex = startIndex;
@@ -143,19 +143,19 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
             return results;
         }
 
-        public static SearchContentResult ConvertContentResults(IEnumerable<SearchResultItem> searchResults, int totalCount)
+        public static SearchContentResult ConvertContentResults(IEnumerable<SearchResultItem> searchResults, int totalCount, string baseUri)
         {
             SearchContentResult results = new SearchContentResult();
-            results.Results = _ConvertSearchResults(searchResults);
+            results.Results = _ConvertSearchResults(searchResults, baseUri);
             results.Total = totalCount;
             results.Count = searchResults.Count();
 
             return results;
         }
 
-        private static IEnumerable<Content> _ConvertSearchResults(IEnumerable<SearchResultItem> searchResults)
+        private static IEnumerable<Content> _ConvertSearchResults(IEnumerable<SearchResultItem> searchResults, string baseUri)
         {
-            return searchResults.Select(r => new Content(r));
+            return searchResults.Select(r => new Content(r, baseUri));
         }
 
         public static IEnumerable<ContentSearchRefinement> ConvertContentSearchRefinements(IEnumerable<KeyValuePair<string, int>> categoryStats)
@@ -302,15 +302,17 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 
             }
 
-            public Content(SearchResultItem r)
+            public Content(SearchResultItem r, string baseUri)
             {
                 Id = r.UniqueID;
                 Name = r.Name;
                 Type = r.Type;
+                Uri = $"{baseUri.TrimEnd('/')}{r.AdditionalFields["path"]}";
                 Properties = r.AdditionalFields;
             }
 
-
+            [JsonProperty(PropertyName = "uri")]
+            public string Uri { get; set; }
             public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
         }
 

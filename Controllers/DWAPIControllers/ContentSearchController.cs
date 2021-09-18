@@ -18,7 +18,7 @@ namespace Ingeniux.Runtime.Controllers
 		[Route("")]
 		public ContentSearchResult ContentSearch(string query = "", [FromUri] List<string> filters=null, string sort ="", int start = 1, int count = 10)
 		{
-			ContentSearchResult results = ContentSearchHelper.GetSearchResults(QueryFilter.Parse(filters), sort, start, count, query).Result;
+			ContentSearchResult results = ContentSearchHelper.GetSearchResults(QueryFilter.Parse(filters), sort, start, count, query, Url.Content("~/")).Result;
 			return results;
 		}
 	}

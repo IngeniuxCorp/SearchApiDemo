@@ -39,7 +39,7 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 			"categorynodes"
 		};
 
-		public static async Task<ContentSearchResult> GetSearchResults(IEnumerable<IEnumerable<QueryFilter>> filters = null, string sort = "", int page = 1, int size = 10, string query = "")
+		public static async Task<ContentSearchResult> GetSearchResults(IEnumerable<IEnumerable<QueryFilter>> filters = null, string sort = "", int page = 1, int size = 10, string query = "", string baseUri="")
 		{
 			int c;
 			IEnumerable<KeyValuePair<string, int>> categoryStats;
@@ -118,7 +118,7 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 			categoryStats = categoryStatsProviders.GetStats(searchResults).Where(p => p.Value > 0);
 
 
-			ContentSearchResult results = ConvertContentSearchResults(searchResults, c, filters, categoryStats, page);
+			ContentSearchResult results = ConvertContentSearchResults(searchResults, c, filters, categoryStats, baseUri, page);
 
 			return results;
 		}
@@ -171,7 +171,7 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 			return filterQuery;
 		}
 
-		public static SearchContentResult GetPagesById(IEnumerable<string> pageIds)
+		public static SearchContentResult GetPagesById(IEnumerable<string> pageIds, string baseUri)
 		{
 			int c;
 			
@@ -198,7 +198,7 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 			instructions.AddQuery(pageIdQuery, Occur.MUST);
 			
 			var searchResults = search.QueryFinal(siteSearch, out c, instructions, page: 1, size: 25);
-			SearchContentResult result = ContentSearchConvert.ConvertContentResults(searchResults, searchResults.Count());
+			SearchContentResult result = ContentSearchConvert.ConvertContentResults(searchResults, searchResults.Count(), baseUri);
 
 			return result;
 		}

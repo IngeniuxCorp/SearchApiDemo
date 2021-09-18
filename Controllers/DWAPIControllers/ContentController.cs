@@ -13,7 +13,7 @@ namespace Ingeniux.Runtime.Controllers
 		[Route("")]
         public SearchContentResult GetContentByIds([FromUri]string[] pageIds)
 		{
-			SearchContentResult results = ContentSearchHelper.GetPagesById(pageIds);
+			SearchContentResult results = ContentSearchHelper.GetPagesById(pageIds, Url.Content("~/"));
 			return results;
 		}
 	}
