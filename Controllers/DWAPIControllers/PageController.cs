@@ -21,27 +21,27 @@ namespace Ingeniux.Runtime.Controllers
         }
 
         [IGXWebApiCache()]
-        [Route("{pageURL?}")]
-        public PageModel GetPage(string pageUrl="/")
+        [Route("")]
+        public PageModel GetPage([FromUri] string path = "/")
         {
-            //System.Diagnostics.Debugger.Launch();
-            if (!pageUrl.StartsWith("/"))
+            if (!path.StartsWith("/"))
             {
-                pageUrl = $"/{pageUrl}";
+                path = $"/{path}";
             }
             string sitePath = CmsRoute.GetSitePath();
             var context = new HttpContextWrapper(HttpContext.Current);
             HttpRequestBase _request = context.Request;
             CMSPageFactory pageFactory = new CMSPageFactory(sitePath);
             ICMSPage page;
-            if (!pageUrl.IsXId())
+            if (!path.IsXId())
             {
-                page = pageFactory.GetPageByPath(_request, pageUrl) as ICMSPage;
+                
+                page = pageFactory.GetPageByPath(_request, path) as ICMSPage;
                 
             }
             else
             {
-                page = pageFactory.GetPage(_request, pageUrl) as ICMSPage;
+                page = pageFactory.GetPage(_request, path) as ICMSPage;
             }
 
             if(page == null)
