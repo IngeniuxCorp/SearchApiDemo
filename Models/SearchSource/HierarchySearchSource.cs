@@ -46,6 +46,7 @@ namespace Ingeniux.Runtime.Models.SearchSource
 			if (string.IsNullOrWhiteSpace(pageId))
 			{
 				Logger.Info($"could not add HIERARCHY");
+				return;
 			}
 			
 			doc.RemoveField(HIERARCHY_VALUE_NAME);
