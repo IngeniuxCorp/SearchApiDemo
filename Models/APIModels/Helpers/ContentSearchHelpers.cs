@@ -80,7 +80,7 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 
 			foreach(var filterGroup in filters)
             {
-				var filterGroupQuery = _ProcessFilters(filterGroup);
+				var filterGroupQuery = _ProcessFilters(filterGroup, instructions);
                 if (filterGroup.Any())
                 {
 					filterQuery.Add(filterGroupQuery, Occur.SHOULD);
@@ -123,7 +123,7 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 			return results;
 		}
 
-		private static BooleanQuery _ProcessFilters(IEnumerable<QueryFilter> filters)
+		private static BooleanQuery _ProcessFilters(IEnumerable<QueryFilter> filters, SearchInstruction searchInstruction)
         {
 			var filterQuery = new BooleanQuery();
 			var categoryRefinements = filters?.Where(r => r.Name.Equals("categorynodes", StringComparison.InvariantCultureIgnoreCase)) ?? new QueryFilter[0];
@@ -160,13 +160,16 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 					continue;
 				}
 
-				var fieldRefinementQuery = new BooleanQuery();
+				//var fieldRefinementQuery = new BooleanQuery();
 
-				var refinementQuery = new TermQuery(new Term(filter.Name, filter.Value));
-				fieldRefinementQuery.Add(refinementQuery, Occur.SHOULD);
+				//var refinementQuery = new TermQuery(new Term(filter.Name, filter.Value));
+				//fieldRefinementQuery.Add(refinementQuery, Occur.SHOULD);
 
-				filterQuery.Add(fieldRefinementQuery, Occur.MUST);
-			}
+				//filterQuery.Add(fieldRefinementQuery, Occur.MUST);
+
+				var fieldRefinementQuery = searchInstruction.GetFieldTermQuery(Occur.MUST, filter.Name, false, filter.Value);
+				filterQuery.Add(fieldRefinementQuery);
+            }
 
 			return filterQuery;
 		}
