@@ -98,19 +98,29 @@ namespace Ingeniux.Runtime.Models.SearchSource
 
 		}
 
+		private string _getEscapedName(string ancestorPrefix, string fieldName,
+			int listItemIndex)
+		{
+			string finalFieldName = fieldName;
+			if (!string.IsNullOrWhiteSpace(ancestorPrefix))
+				finalFieldName = ancestorPrefix + "__" + fieldName;
+
+			if (listItemIndex > 0)
+				finalFieldName += "_" + listItemIndex;
+
+			return $"{finalFieldName}_escaped";
+		}
+
 		protected override void parseXmlNodeForFields(XElement element, SearchItem doc, Dictionary<string, string> urls, SearchType typeEntry, string ancestorPrefix, int listItemIndex, HashSet<string> ancestorCompIds, CmsIndexingLogs indexLogs, AssetMap assetMap)
 		{
 			base.parseXmlNodeForFields(element, doc, urls, typeEntry, ancestorPrefix, listItemIndex, ancestorCompIds, indexLogs, assetMap);
 
+            if (element.GetAttributeValue("type", string.Empty).Equals("xhtml"))
+            {
+				var fieldName = _getEscapedName(ancestorPrefix, element.Name.ToString(), listItemIndex);
+				var cdata = (XCData)element.FirstNode;
+				doc[fieldName] = new SearchField(HttpUtility.HtmlEncode(cdata.Value), 1, Field.Index.NO);
 
-			if (!doc.Keys.Any(k => k.Equals(ESCAPED_CONTENT_VALUE_NAME, StringComparison.InvariantCultureIgnoreCase)))
-			{
-				var rawAbstractElement = element.Document.Descendants(CONTENT_VALUE_NAME).FirstOrDefault();
-				if (rawAbstractElement != null)
-				{
-					var escapedValue = JsonConvert.SerializeObject(rawAbstractElement.Value);
-					doc[ESCAPED_CONTENT_VALUE_NAME] = new SearchField(escapedValue, 1, Field.Index.NO);
-				}
 			}
 		}
 		private const string HIERARCHY_BY_ID_CACHE_NAME = "HIERARCHY_BY_ID_CACHE";
