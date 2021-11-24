@@ -18,6 +18,8 @@ using System.Xml.Linq;
 namespace Ingeniux.Runtime.Models.APIModels.Helpers
 {
     using System.ComponentModel.DataAnnotations;
+    using System.Diagnostics;
+
     public class ContentSearchConvert
     {
         private const string TAXONOMY_FILE_CACHE_NAME = "TAX_FILE";
@@ -151,6 +153,88 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
             results.Count = searchResults.Count();
 
             return results;
+        }
+
+        private static void GroupProperties(JToken parent, string propertyPrefix, JProperty property, JObject jObj)
+        {
+            var shortenedPropertyName = property.Name.Substring(propertyPrefix.Length);
+
+            //var i = shortenedPropertyName.IndexOf("__");
+            var match = Regex.Match(shortenedPropertyName, "__?");
+            var i = match.Index;
+            if (match.Success && i > -1)
+            {
+                var propertyName = shortenedPropertyName.Substring(0, i);
+                JToken token;
+                if (parent is JArray parentArray)
+                {
+                    var dex = int.Parse(propertyName) - 1;
+                    if (dex < parentArray.Count)
+                    {
+                        token = parentArray[dex];
+                    }
+                    else
+                    {
+                        token = null;
+                    }
+                }
+                else
+                {
+                    token = parent.SelectToken(propertyName);
+                }
+
+                if (token == null)
+                {
+                    if (match.Value == "_")
+                    {
+                        token = new JArray();
+                    }
+                    else
+                    {
+                        token = new JObject();
+                    }
+                    if (parent is JArray _parentArray)
+                    {
+                        _parentArray.Add(token);
+                    }
+                    else
+                    {
+                        (parent as JObject).Add(propertyName, token);
+                    }
+                }
+                GroupProperties(token, $"{propertyPrefix}{propertyName}{match.Value}", property, jObj);
+
+            }
+            else
+            {
+                if (parent is JArray parentArray)
+                {
+                    parentArray.Add(property.Value.Value<string>());
+                }
+                else
+                {
+                    (parent as JObject).Add(shortenedPropertyName, property.Value.Value<string>());
+                }
+            }
+        }
+
+        public static string SearchResultItemToJsonString(SearchResultItem searchResultItem)
+        {
+            var queryObject = JObject.Parse(JsonConvert.SerializeObject(searchResultItem));
+            var jObj = new JObject();
+
+            var additionalFields = queryObject.GetValue("AdditionalFields") as JObject;
+
+            foreach (var prop in additionalFields.Properties().Where(p => !p.Name.StartsWith("_")))
+            {
+                GroupProperties(jObj, string.Empty, prop, jObj);
+            }
+
+            queryObject.Remove("AdditionalFields");
+
+            queryObject.Add("AdditionalFields", jObj);
+
+            return queryObject.ToString();
         }
 
         private static IEnumerable<Content> _ConvertSearchResults(IEnumerable<SearchResultItem> searchResults, string baseUri)

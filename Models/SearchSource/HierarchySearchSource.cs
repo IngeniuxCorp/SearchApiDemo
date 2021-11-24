@@ -108,7 +108,7 @@ namespace Ingeniux.Runtime.Models.SearchSource
 			if (listItemIndex > 0)
 				finalFieldName += "_" + listItemIndex;
 
-			return $"{finalFieldName}_escaped";
+			return $"{finalFieldName}escaped";
 		}
 
 		protected override void parseXmlNodeForFields(XElement element, SearchItem doc, Dictionary<string, string> urls, SearchType typeEntry, string ancestorPrefix, int listItemIndex, HashSet<string> ancestorCompIds, CmsIndexingLogs indexLogs, AssetMap assetMap)
@@ -120,7 +120,6 @@ namespace Ingeniux.Runtime.Models.SearchSource
 				var fieldName = _getEscapedName(ancestorPrefix, element.Name.ToString(), listItemIndex);
 				var cdata = (XCData)element.FirstNode;
 				doc[fieldName] = new SearchField(HttpUtility.HtmlEncode(cdata.Value), 1, Field.Index.NO);
-
 			}
 		}
 		private const string HIERARCHY_BY_ID_CACHE_NAME = "HIERARCHY_BY_ID_CACHE";
