@@ -101,14 +101,14 @@ namespace Ingeniux.Runtime.Models.SearchSource
 		private string _getEscapedName(string ancestorPrefix, string fieldName,
 			int listItemIndex)
 		{
-			string finalFieldName = fieldName;
+			string finalFieldName = $"{fieldName}escaped";
 			if (!string.IsNullOrWhiteSpace(ancestorPrefix))
-				finalFieldName = ancestorPrefix + "__" + fieldName;
+				finalFieldName = ancestorPrefix + "__" + finalFieldName;
 
 			if (listItemIndex > 0)
 				finalFieldName += "_" + listItemIndex;
 
-			return $"{finalFieldName}escaped";
+			return finalFieldName;
 		}
 
 		protected override void parseXmlNodeForFields(XElement element, SearchItem doc, Dictionary<string, string> urls, SearchType typeEntry, string ancestorPrefix, int listItemIndex, HashSet<string> ancestorCompIds, CmsIndexingLogs indexLogs, AssetMap assetMap)
