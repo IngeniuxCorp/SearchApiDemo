@@ -24,6 +24,10 @@ namespace Ingeniux.Runtime.Controllers
         [Route("")]
         public PageModel GetPage([FromUri] string path = "/")
         {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                path = "/";
+            }
             if (!path.StartsWith("/"))
             {
                 path = $"/{path}";
