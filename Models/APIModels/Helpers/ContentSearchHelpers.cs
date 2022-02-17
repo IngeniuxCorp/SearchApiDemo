@@ -4,31 +4,18 @@ using Ingeniux.Search;
 using Ingeniux.Search.StatsProviders;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
-using Lucene.Net.Spatial;
-using Lucene.Net.Spatial.Prefix;
-using Lucene.Net.Spatial.Prefix.Tree;
-using Lucene.Net.Spatial.Queries;
-using Lucene.Net.Spatial.Util;
-using Newtonsoft.Json;
-using Spatial4n.Core.Context;
-using Spatial4n.Core.Distance;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.Caching;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Web;
-using System.Xml.Linq;
 using static Ingeniux.Runtime.Models.APIModels.Helpers.ContentSearchConvert;
 
 namespace Ingeniux.Runtime.Models.APIModels.Helpers
 {
-	public class ContentSearchHelper
+    public class ContentSearchHelper
 	{
 		private static readonly Regex _SearchCleaner = new Regex("\\*|\\?|\u25CA|\u2122|\u00AE|\u00A9|\u2014");
 		private const string SEARCH_XID_FILED_NAME = "xID";
@@ -160,16 +147,21 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 					continue;
 				}
 
-				//var fieldRefinementQuery = new BooleanQuery();
+				BooleanClause fieldRefinementQuery;
 
-				//var refinementQuery = new TermQuery(new Term(filter.Name, filter.Value));
-				//fieldRefinementQuery.Add(refinementQuery, Occur.SHOULD);
-
-				//filterQuery.Add(fieldRefinementQuery, Occur.MUST);
-
-				var fieldRefinementQuery = searchInstruction.GetFieldTermQuery(Occur.MUST, filter.Name, false, filter.Value);
+				switch (filter.Name.ToLowerInvariant())
+                {
+					case "type":
+					case "_type_o_":
+                        fieldRefinementQuery = searchInstruction.GetTypeQuery(Occur.MUST, filter.Value);
+						break;
+					default:
+						fieldRefinementQuery = searchInstruction.GetFieldTermQuery(Occur.MUST, filter.Name, false, filter.Value);
+						break;
+                }
 				filterQuery.Add(fieldRefinementQuery);
-            }
+
+			}
 
 			return filterQuery;
 		}
