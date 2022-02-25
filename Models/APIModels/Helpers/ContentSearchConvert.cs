@@ -220,6 +220,11 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 
         public static string SearchResultItemToJsonString(SearchResultItem searchResultItem)
         {
+            return SearchResultItemToJsonString(searchResultItem).ToString();
+        }
+
+        public static JObject SearchResultItemToJsonObject(SearchResultItem searchResultItem)
+        {
             var queryObject = JObject.Parse(JsonConvert.SerializeObject(searchResultItem));
             var jObj = new JObject();
 
@@ -234,7 +239,7 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
 
             queryObject.Add("AdditionalFields", jObj);
 
-            return queryObject.ToString();
+            return queryObject;
         }
 
         private static IEnumerable<Content> _ConvertSearchResults(IEnumerable<SearchResultItem> searchResults, string baseUri)
@@ -392,12 +397,13 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
                 Name = r.Name;
                 Type = r.Type;
                 Uri = $"{baseUri.TrimEnd('/')}{r.AdditionalFields["path"]}";
-                Properties = r.AdditionalFields;
+                Properties = SearchResultItemToJsonObject(r).GetValue("AdditionalFields") as JObject;
             }
 
             [JsonProperty(PropertyName = "uri")]
             public string Uri { get; set; }
-            public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
+            public string ContentId { get; set; }
+            public JObject Properties { get; set; } = new JObject();
         }
 
         public sealed class Category : BaseClass

@@ -17,7 +17,6 @@ namespace Ingeniux.Runtime
         {
             foreach (ApiDescription apiDescription in apiExplorer.ApiDescriptions)
             {
-                //System.Diagnostics.Debugger.Launch();
                 var content = swaggerDoc.definitions["Content"];
 
                 if (apiDescription.RelativePath.Contains("api/AutomatedTaskWebAPI"))
