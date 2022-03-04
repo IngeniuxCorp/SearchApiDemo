@@ -158,8 +158,11 @@ namespace Ingeniux.Runtime.Models.APIModels.Helpers
         private static void GroupProperties(JToken parent, string propertyPrefix, JProperty property, JObject jObj)
         {
             var shortenedPropertyName = property.Name.Substring(propertyPrefix.Length);
+            if (shortenedPropertyName.EndsWith("escaped")) { 
+                var decodedXHTML = HttpUtility.HtmlDecode(property.Value.Value<string>());
+                property.Value = decodedXHTML;
+            }
 
-            //var i = shortenedPropertyName.IndexOf("__");
             var match = Regex.Match(shortenedPropertyName, "__?");
             var i = match.Index;
             if (match.Success && i > -1)
